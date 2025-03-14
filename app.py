@@ -15,6 +15,7 @@ con = mysql.connector.pooling.MySQLConnectionPool(
   password = MYSQL_PW,
   host = "localhost",
   database = "website",
+  charset='utf8'
 )
 
 cnx=con.get_connection()
@@ -53,19 +54,26 @@ async def search(request: Request, page: int=0, keyword: str=None):
     cursor.execute(query, params)
     attractions = cursor.fetchall()
     
-    if not attractions:
-      return {
-        "nextPage": None,
-        "data": [],
-      }
+    if len(attractions) < PAGE_SIZE:
+      return JSONResponse(
+        headers={"content-type": "application/json;charset=utf-8"},
+        content={
+          "nextPage": None,
+          "data": attractions,
+        }
+      )
     else:
-      return {
-        "nextPage": page + 1,
-        "data": attractions,
-      }
+      return JSONResponse(
+        headers={"content-type": "application/json;charset=utf-8"},
+        content={
+          "nextPage": page + 1,
+          "data": attractions,
+        }
+      )
   else:
     return JSONResponse(
       status_code=500,
+      headers={"content-type": "application/json;charset=utf-8"},
       content={
         "error": True,
         "message": "請輸入關鍵字查詢"
@@ -83,12 +91,14 @@ async def attraction_id(request: Request, attractionId: int):
     cursor.execute(query, (attractionId,))
     data = cursor.fetchall()
     if data:
-      return {
-        "data": data
-      }
+      return JSONResponse(
+        headers={"content-type": "application/json;charset=utf-8"},
+        content={"data": data}
+      )
     else:
       return JSONResponse(
         status_code=400,
+        headers={"content-type": "application/json;charset=utf-8"},
         content={
           "error": True,
           "message": "景點編號錯誤"
@@ -97,6 +107,7 @@ async def attraction_id(request: Request, attractionId: int):
   else:
     return JSONResponse(
       status_code=500,
+      headers={"content-type": "application/json;charset=utf-8"},
       content={
         "error": True,
         "message": "請輸入景點編號查詢"
@@ -116,12 +127,14 @@ async def station(request: Request):
   
   if data:
     mrt_list = [mrt["mrt"] for mrt in data if mrt and mrt.get("mrt") is not None]
-    return {
-      "data": mrt_list
-    }
+    return JSONResponse(
+      headers={"content-type": "application/json;charset=utf-8"},
+      content={"data": mrt_list}
+    )
   else:
     return JSONResponse(
       status_code=500,
+      headers={"content-type": "application/json;charset=utf-8"},
       content={
         "error": True,
         "message": "查無資料"

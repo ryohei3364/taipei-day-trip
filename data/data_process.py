@@ -9,10 +9,11 @@ MYSQL_PW=os.getenv("MYSQL_PW")
 con = mysql.connector.pooling.MySQLConnectionPool(
   pool_name = "mypool",
   pool_size = 10,
-  user = "root",
+  user = "demo",
   password = MYSQL_PW,
   host = "localhost",
-  database = "taipei_trip",
+  database = "website",
+  charset='utf8'
 )
 
 cnx=con.get_connection()
