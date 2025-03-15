@@ -45,7 +45,7 @@ for spot in spots:
       match = re.search(r"(^https?:(.{10,})*.(jpg|png))", "https://" + img, re.I)
       if match:
         images.append(match.group(0))
-
+        
   images_json = json.dumps(images)
   val = (data_id, name, category, description, address, transport, mrt, lat, lng, images_json)
   cursor.execute(query, val)  
