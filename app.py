@@ -96,8 +96,6 @@ async def attraction_id(request: Request, attractionId: int):
     """
     cursor.execute(query, (attractionId,))
     data = cursor.fetchall()
-    # print(data[0])
-    # print(data[0]['images'])
     
     if data:
       for spot in data:
@@ -105,7 +103,7 @@ async def attraction_id(request: Request, attractionId: int):
 
       return JSONResponse(
         headers={"content-type": "application/json;charset=utf-8"},
-        content={"data": data}
+        content={"data": data[0]}
       )
     else:
       return JSONResponse(
