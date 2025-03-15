@@ -1,25 +1,9 @@
 from fastapi import *
 from fastapi.responses import FileResponse, JSONResponse
-from dotenv import load_dotenv
-import mysql.connector, os, json
-
-load_dotenv()
-MYSQL_PW=os.getenv("MYSQL_PW")
+from connection import sql_pool
+import json
 
 app=FastAPI()
-
-con = mysql.connector.pooling.MySQLConnectionPool(
-  pool_name = "mypool",
-  pool_size = 10,
-  user = "demo",
-  password = MYSQL_PW,
-  host = "localhost",
-  database = "website",
-  charset='utf8'
-)
-
-cnx=con.get_connection()
-cursor = cnx.cursor(dictionary=True)
 
 # Static Pages (Never Modify Code in this Block)
 @app.get("/", include_in_schema=False)
@@ -41,6 +25,7 @@ async def thankyou(request: Request):
 async def search(request: Request, page: int=0, keyword: str=None):
   PAGE_SIZE = 12
   offset = page * PAGE_SIZE
+  cnx = None
   
   base_query = """
     SELECT id, name, category, description, address, transport, mrt, lat, lng, images
@@ -58,8 +43,10 @@ async def search(request: Request, page: int=0, keyword: str=None):
     params = (PAGE_SIZE, offset)
   
   try:
-    cursor.execute(full_query, params)
-    data = cursor.fetchall()
+    cnx = sql_pool.get_connection()
+    with cnx.cursor(dictionary=True) as cursor:
+      cursor.execute(full_query, params)
+      data = cursor.fetchall()
   
     next_page = page + 1 if len(data) == PAGE_SIZE else None
 
@@ -75,7 +62,8 @@ async def search(request: Request, page: int=0, keyword: str=None):
         }
       )
       
-  except Exception:
+  except Exception as e:
+    print(f"[ERROR] API 取得景點資料失敗: {e}")
     return JSONResponse(
       status_code=500,
       headers={"content-type": "application/json;charset=utf-8"},
@@ -84,26 +72,30 @@ async def search(request: Request, page: int=0, keyword: str=None):
         "message": "伺服器內部錯誤"
       }
     )
+  finally:
+    if cnx:
+      cnx.close()
     
 
 # 根據景點編號取得景點資料 /api/attraction/{attractionId}
 @app.get("/api/attraction/{attractionId}")
 async def attraction_id(request: Request, attractionId: int):
+  cnx = None
+  query = """
+    SELECT data_id, name, category, description, address, transport, mrt, lat, lng, images
+    FROM attraction WHERE data_id=%s
+  """
   try:
-    query = """
-      SELECT id, name, category, description, address, transport, mrt, lat, lng, images
-      FROM attraction WHERE data_id=%s
-    """
-    cursor.execute(query, (attractionId,))
-    data = cursor.fetchall()
+    cnx = sql_pool.get_connection()
+    with cnx.cursor(dictionary=True) as cursor:
+      cursor.execute(query, (attractionId,))
+      data = cursor.fetchone()
     
     if data:
-      for spot in data:
-        spot['images'] = json.loads(spot['images'])
-
+      data['images'] = json.loads(data['images'])
       return JSONResponse(
         headers={"content-type": "application/json;charset=utf-8"},
-        content={"data": data[0]}
+        content={"data": data}
       )
     else:
       return JSONResponse(
@@ -114,7 +106,8 @@ async def attraction_id(request: Request, attractionId: int):
           "message": "景點編號錯誤"
         }
       )
-  except Exception:
+  except Exception as e:
+    print(f"[ERROR] API 取得景點資料失敗: {e}")
     return JSONResponse(
       status_code=500,
       headers={"content-type": "application/json;charset=utf-8"},
@@ -123,18 +116,23 @@ async def attraction_id(request: Request, attractionId: int):
         "message": "伺服器內部錯誤"
       }
     )
+  finally:
+    if cnx:
+      cnx.close()
 
 
 # 取得捷運站名稱列表 /api/mrts
 @app.get("/api/mrts")
 async def station(request: Request):
+  query = """
+    SELECT mrt, COUNT(mrt) FROM attraction 
+    GROUP BY mrt ORDER BY COUNT(mrt) DESC
+  """ 
   try:
-    query = """
-        SELECT mrt, COUNT(mrt) FROM attraction 
-        GROUP BY mrt ORDER BY COUNT(mrt) DESC
-      """ 
-    cursor.execute(query)
-    data = cursor.fetchall()
+    cnx = sql_pool.get_connection()
+    with cnx.cursor(dictionary=True) as cursor:
+      cursor.execute(query)
+      data = cursor.fetchall()
 
     if data:
       mrt_list = [mrt["mrt"] for mrt in data if mrt and mrt.get("mrt") is not None]
@@ -143,7 +141,8 @@ async def station(request: Request):
         content={"data": mrt_list}
       )
       
-  except Exception:
+  except Exception as e:
+    print(f"[ERROR] API 取得捷運站資料失敗: {e}")
     return JSONResponse(
       status_code=500,
       headers={"content-type": "application/json;charset=utf-8"},
@@ -152,4 +151,7 @@ async def station(request: Request):
         "message": "伺服器內部錯誤"
       }
     )
+  finally:
+    if cnx:
+      cnx.close()
   
