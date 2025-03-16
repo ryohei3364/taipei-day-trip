@@ -28,7 +28,7 @@ async def search(request: Request, page: int=0, keyword: str=None):
   cnx = None
   
   base_query = """
-    SELECT id, name, category, description, address, transport, mrt, lat, lng, images
+    SELECT data_id AS id, name, category, description, address, transport, mrt, lat, lng, images
     FROM attraction
   """
   page_query = " LIMIT %s OFFSET %s"
@@ -82,7 +82,7 @@ async def search(request: Request, page: int=0, keyword: str=None):
 async def attraction_id(request: Request, attractionId: int):
   cnx = None
   query = """
-    SELECT data_id, name, category, description, address, transport, mrt, lat, lng, images
+    SELECT data_id AS id, name, category, description, address, transport, mrt, lat, lng, images
     FROM attraction WHERE data_id=%s
   """
   try:
