@@ -242,7 +242,7 @@ footer {
     background-position: top; 
   }
   input{
-    width: 290px;
+    min-width: 200px;
   }
   .list {
     width: 100vw;
