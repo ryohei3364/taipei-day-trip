@@ -3,7 +3,9 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
+MYSQL_USER=os.getenv("MYSQL_USER")
 MYSQL_PW=os.getenv("MYSQL_PW")
+MYSQL_DB=os.getenv("MYSQL_DB")
 
 class SQLPool:
   
@@ -12,10 +14,10 @@ class SQLPool:
       self.pool = pooling.MySQLConnectionPool(
         pool_name = "mypool",
         pool_size = 10,
-        user = "demo",
+        user = MYSQL_USER,
         password = MYSQL_PW,
         host = "localhost",
-        database = "website",
+        database = MYSQL_DB,
         charset='utf8',
         pool_reset_session=True,
         connection_timeout=30

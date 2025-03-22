@@ -4,15 +4,17 @@ from dotenv import load_dotenv
 import mysql.connector, os, json, re
 
 load_dotenv()
+MYSQL_USER=os.getenv("MYSQL_USER")
 MYSQL_PW=os.getenv("MYSQL_PW")
+MYSQL_DB=os.getenv("MYSQL_DB")
 
 con = mysql.connector.pooling.MySQLConnectionPool(
   pool_name = "mypool",
   pool_size = 10,
-  user = "demo",
+  user = MYSQL_USER,
   password = MYSQL_PW,
   host = "localhost",
-  database = "website",
+  database = MYSQL_DB,
   charset='utf8'
 )
 
@@ -24,12 +26,12 @@ with open('data/taipei-attractions.json', 'r', encoding='utf-8') as json_file:
 
 spots = data['result']['results']
 query = """
-  INSERT INTO attraction (data_id, name, category, description, address, transport, mrt, lat, lng, images)
+  INSERT INTO attraction (id, name, category, description, address, transport, mrt, lat, lng, images)
   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 """
 
 for spot in spots:
-  data_id = spot['_id']
+  id = spot['_id']
   name = spot['name']
   category = spot['CAT']
   description = spot['description']
