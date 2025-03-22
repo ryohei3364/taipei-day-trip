@@ -1,24 +1,10 @@
 from fastapi import *
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from connection import sql_pool
 import json
 
 app=FastAPI()
-
-# Static Pages (Never Modify Code in this Block)
-@app.get("/", include_in_schema=False)
-async def index(request: Request):
-	return FileResponse("./static/index.html", media_type="text/html")
-@app.get("/attraction/{id}", include_in_schema=False)
-async def attraction(request: Request, id: int):
-	return FileResponse("./static/attraction.html", media_type="text/html")
-@app.get("/booking", include_in_schema=False)
-async def booking(request: Request):
-	return FileResponse("./static/booking.html", media_type="text/html")
-@app.get("/thankyou", include_in_schema=False)
-async def thankyou(request: Request):
-	return FileResponse("./static/thankyou.html", media_type="text/html")
-
 
 # 取得景點資料列表 /api/attractions?page=int&keyword=str
 @app.get("/api/attractions")
@@ -28,7 +14,7 @@ async def search(request: Request, page: int=0, keyword: str=None):
   cnx = None
   
   base_query = """
-    SELECT data_id AS id, name, category, description, address, transport, mrt, lat, lng, images
+    SELECT id, name, category, description, address, transport, mrt, lat, lng, images
     FROM attraction
   """
   page_query = " LIMIT %s OFFSET %s"
@@ -82,8 +68,8 @@ async def search(request: Request, page: int=0, keyword: str=None):
 async def attraction_id(request: Request, attractionId: int):
   cnx = None
   query = """
-    SELECT data_id AS id, name, category, description, address, transport, mrt, lat, lng, images
-    FROM attraction WHERE data_id=%s
+    SELECT id, name, category, description, address, transport, mrt, lat, lng, images
+    FROM attraction WHERE id=%s
   """
   try:
     cnx = sql_pool.get_connection()
@@ -154,4 +140,20 @@ async def station(request: Request):
   finally:
     if cnx:
       cnx.close()
+
   
+# Static Pages (Never Modify Code in this Block)
+@app.get("/", include_in_schema=False)
+async def index(request: Request):
+	return FileResponse("./static/index.html", media_type="text/html")
+@app.get("/attraction/{id}", include_in_schema=False)
+async def attraction(request: Request, id: int):
+	return FileResponse("./static/attraction.html", media_type="text/html")
+@app.get("/booking", include_in_schema=False)
+async def booking(request: Request):
+	return FileResponse("./static/booking.html", media_type="text/html")
+@app.get("/thankyou", include_in_schema=False)
+async def thankyou(request: Request):
+	return FileResponse("./static/thankyou.html", media_type="text/html")
+  
+app.mount("/static", StaticFiles(directory="static"), name="static")

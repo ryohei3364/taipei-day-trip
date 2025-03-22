@@ -1,0 +1,235 @@
+@import url("https://fonts.googleapis.com/earlyaccess/notosanstc.css");
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  font-family: 'Noto Sans TC';
+  font-weight: 500;
+  margin: 0;
+}
+.menu {
+  width: 100%;
+  height: 54px;
+  background-color: white;
+  position: fixed;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+}
+.menu__item {
+  width: 1200px;
+  height: 54px;
+  color: #448899;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+}
+a {
+  text-decoration: none;
+  color: #666666;
+  margin-left: 20px;
+  white-space: nowrap;
+}
+section {
+  width: 100%;
+  height: 320px;
+  padding-top: 54px;
+  background: url("../images/welcome.png") top center / cover no-repeat;
+  background-origin: padding-box;
+  background-position: 0px 54px; 
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+.search {
+  width: 1200px;
+  margin: 100px auto;
+  color: white;
+  padding: 0px 15px;
+}
+input,
+.search__input--btn {
+  height: 46px;
+  border: none;
+  font-size: 16px;
+}
+input{
+  width: 400px;
+  color: #757575;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  text-indent: 10px;
+}
+.search__input--btn {
+  width: 60px;
+  background-color: #448899;
+  border-radius: 0 5px 5px 0;
+  cursor: pointer; 
+}
+.search__input--btn img{
+  margin: 8px;
+}
+h1 {
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+h2 {
+  font-weight:bold;
+}
+p {
+  font-weight:bold;
+  margin-bottom: 25px;
+}
+.search__input {
+  display: flex;
+  align-items: center;
+}
+main {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.list {
+  width: 1200px;
+  height: 50x;
+  display: flex;
+  margin: 40px;
+  padding: 0px 15px;
+  position: relative;
+}
+.list__btn--left,
+.list__btn--right {
+  width: 32px;
+  height: 32px;
+  border: none;
+  padding: 0;
+  cursor: pointer; 
+  z-index: 1;
+}
+.list__btn--left {
+  background: url("../images/States=Default_left.png")
+}
+.list__btn--left:hover {
+  background: url("../images/States=Hovered_left.png")
+}
+.list__btn--right {
+  background: url("../images/States=Default_right.png")
+}
+.list__btn--right:hover {
+  background: url("../images/States=Hovered_right.png")
+}
+.list__container {
+  display: flex;
+  flex: 1;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  margin: 0 10px;
+  position: relative;
+  z-index: 0;
+}
+.list__container--station {
+  display: inline-block;
+  color: #666666;
+  padding: 5px 13px;
+  white-space: nowrap;
+}
+.list__container--station:hover {
+  color:black;
+  cursor: pointer; 
+}
+.attractions {
+  width: 1200px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 30px;
+  padding: 0px 15px;
+}
+.attractions__card {
+  width: calc((100% - 30px * 3) / 4);
+  max-width: 330px;
+  height: 242px;
+  background-color: white;
+  border: 1px solid #E8E8E8;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.attractions__card--overlay {
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 10px;
+  margin-bottom: -155px;
+  margin-top: auto;
+}
+.attractions__card--info {
+  background-color: white;
+  display: flex;
+  padding: 10px;
+  width: 100%;
+  margin-top: auto;
+}
+.attractions__card--info--mrt,
+.attractions__card--info--category {
+  flex: 1;
+}
+.attractions__card--info--category {
+  text-align: right;
+}
+footer {
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #757575;
+  margin-top: 40px;
+}
+@media (max-width: 1200px),(max-width: 850px){
+  .menu__item {
+    width: 90vw;
+  } 
+  .search {
+    width: 90vw;
+  } 
+  .list {
+    width: 90vw;
+  }
+  .attractions {
+    max-width: 90vw;
+  }
+}
+@media (max-width: 1200px) {
+  .attractions__card {
+    width: calc((100% - 30px * 2) / 3);
+  }
+}
+@media (max-width: 850px) {
+  .attractions__card {
+    width: calc((100% - 30px * 1) / 2);
+    margin: 0px auto;
+  }
+}
+@media (max-width: 600px) {
+  section {
+    background-position: top; 
+  }
+  .search {
+    width: 95vw;
+  }
+  .list {
+    width: 95vw;
+  }
+  .attractions {
+    max-width: 95vw;
+  }
+  .attractions__card {
+    width: 100vw;
+    margin: 0px auto;
+  }
+}
