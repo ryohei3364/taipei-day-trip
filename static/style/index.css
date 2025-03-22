@@ -30,9 +30,11 @@ body {
   padding: 15px;
 }
 a {
+  font-size: 16px;
+  font-weight: 400;
   text-decoration: none;
   color: #666666;
-  margin-left: 20px;
+  margin-left: 13px;
   white-space: nowrap;
 }
 section {
@@ -76,14 +78,18 @@ input{
   margin: 8px;
 }
 h1 {
-  font-weight: bold;
+  font-size: 28px;
+  font-weight: 500;
   margin-bottom: 15px;
 }
 h2 {
-  font-weight:bold;
+  font-size: 30px;
+  font-weight: 600;
+  white-space:nowrap; 
 }
 p {
-  font-weight:bold;
+  font-size: 16px;
+  font-weight: 500;
   margin-bottom: 25px;
 }
 .search__input {
@@ -136,6 +142,8 @@ main {
   z-index: 0;
 }
 .list__container--station {
+  font-size: 16px;
+  font-weight: 400;
   display: inline-block;
   color: #666666;
   padding: 5px 13px;
@@ -164,6 +172,7 @@ main {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+
 }
 .attractions__card--overlay {
   background-color: rgba(0, 0, 0, 0.6);
@@ -183,12 +192,14 @@ main {
 .attractions__card--info--mrt,
 .attractions__card--info--category {
   flex: 1;
+  font-size: 16px;
+  font-weight: 400;
 }
 .attractions__card--info--category {
   text-align: right;
 }
 footer {
-  height: 50px;
+  height: 104px;
   display: flex;
   color: white;
   justify-content: center;
@@ -221,7 +232,10 @@ footer {
     margin: 0px auto;
   }
 }
-@media (max-width: 600px) {
+@media (max-width: 600px),(max-width: 200px){
+  .menu__item {
+    padding: 0px;
+  }
   section {
     background-position: top; 
   }
@@ -229,13 +243,24 @@ footer {
     width: 95vw;
   }
   .list {
-    width: 95vw;
+    width: 100vw;
   }
   .attractions {
-    max-width: 95vw;
+    max-width: 100vw;
   }
   .attractions__card {
-    width: 100vw;
+    width: 330px;
+    height: 280px;
     margin: 0px auto;
+  }
+  .attractions__card--overlay {
+    margin-bottom: -192px;
+  }
+  a {
+    font-size: 1rem;
+    margin-left: 8px;
+  }
+  h2 {
+    font-size: clamp(1.3rem, 1.7rem, 30px);
   }
 }
