@@ -6,6 +6,8 @@ const attractionsDiv = document.querySelector('.attractions');
 const listcontainerDiv = document.querySelector('.list__container');
 const searchBox = document.getElementById('searchBox');
 const searchIcon = document.getElementById('searchIcon');
+const leftScroll = document.getElementById('leftScroll');
+const rightScroll = document.getElementById('rightScroll');
 
 function getSearch() {
   let searchKeyword = searchBox.value.trim();
@@ -109,7 +111,7 @@ async function observeLastCard() {
     if (entries[0].isIntersecting) {
       observer.unobserve(lastCard);
       loadAttractions();
-      
+
       setTimeout(() => {
         observeLastCard();
       }, 500);
@@ -149,15 +151,12 @@ function loadMrts(station) {
   listcontainerDiv.appendChild(stationsDiv);
 }
 
-function scrollClick(container, scrollDistance) {
-  container.scrollBy({ left: scrollDistance, behavior: 'smooth' });
-}
-
-const leftScroll = document.getElementById('leftScroll');
-const rightScroll = document.getElementById('rightScroll');
-
-leftScroll.addEventListener('click', ()=>scrollClick(listcontainerDiv, -30));
-rightScroll.addEventListener('click', ()=>scrollClick(listcontainerDiv, 30));
+leftScroll.addEventListener('click', () => {
+  listcontainerDiv.scrollBy({ left: -30, behavior: 'smooth' });
+});
+rightScroll.addEventListener('click', () => {
+  listcontainerDiv.scrollBy({ left: 30, behavior: 'smooth' });
+});
 
 
 window.onload = function () {
