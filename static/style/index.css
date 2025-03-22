@@ -66,12 +66,13 @@ input{
   color: #757575;
   border-top-left-radius: 5px;
   border-bottom-left-radius: 5px;
+  border-radius: 5px 0px 0px 5px;
   text-indent: 10px;
 }
 .search__input--btn {
   width: 60px;
   background-color: #448899;
-  border-radius: 0 5px 5px 0;
+  border-radius: 0px 5px 5px 0px;
   cursor: pointer; 
 }
 .search__input--btn img{
@@ -234,13 +235,14 @@ footer {
 }
 @media (max-width: 600px),(max-width: 200px){
   .menu__item {
+    width: 90vw;
     padding: 0px;
-  }
+  }  
   section {
     background-position: top; 
   }
-  .search {
-    width: 95vw;
+  input{
+    width: 290px;
   }
   .list {
     width: 100vw;
