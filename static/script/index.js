@@ -139,7 +139,7 @@ async function getMrts(){
       keyword = stationDiv.textContent;
       searchBox.value = stationDiv.textContent;
       attractionsDiv.innerHTML = '';
-      loadAttractions(); 
+      getSearch();
     });
   }
 }

@@ -39,11 +39,10 @@ a {
 }
 section {
   width: 100%;
-  height: 320px;
+  height: 374px;
   padding-top: 54px;
   background: url("../images/welcome.png") top center / cover no-repeat;
   background-origin: padding-box;
-  background-position: 0px 54px; 
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -237,9 +236,6 @@ footer {
   .menu__item {
     width: 90vw;
     padding: 0px;
-  }  
-  section {
-    background-position: top; 
   }
   input{
     min-width: 200px;
