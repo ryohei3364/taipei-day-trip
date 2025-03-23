@@ -11,7 +11,6 @@ const rightScroll = document.getElementById('rightScroll');
 
 function getSearch() {
   let searchKeyword = searchBox.value.trim();
-  console.log(searchKeyword);
   page = 0;
   keyword = searchKeyword;
   attractionsDiv.innerHTML = '';
@@ -51,7 +50,7 @@ async function getAttractions(page, keyword){
 }
 
 async function loadAttractions() {
-  if (page === null) return;
+  if (page === null || page === undefined) return;
 
   let { nextPage, data } = await getAttractions(page, keyword);
 
@@ -89,7 +88,6 @@ async function loadAttractions() {
 
     attractionsDiv.appendChild(attractionDiv);
   }
-
   page = nextPage;
   observeLastCard();
 }
