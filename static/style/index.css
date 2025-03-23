@@ -63,8 +63,6 @@ input,
 input{
   width: 400px;
   color: #757575;
-  border-top-left-radius: 5px;
-  border-bottom-left-radius: 5px;
   border-radius: 5px 0px 0px 5px;
   text-indent: 10px;
 }
