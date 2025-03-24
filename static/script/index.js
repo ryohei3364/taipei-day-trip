@@ -1,6 +1,7 @@
 let page = 0;
 let keyword = null;
 let observer = null;
+let isLoading = false;
 
 const attractionsDiv = document.querySelector('.attractions');
 const listcontainerDiv = document.querySelector('.list__container');
@@ -8,6 +9,15 @@ const searchBox = document.getElementById('searchBox');
 const searchIcon = document.getElementById('searchIcon');
 const leftScroll = document.getElementById('leftScroll');
 const rightScroll = document.getElementById('rightScroll');
+
+searchIcon.addEventListener('click', getSearch)
+searchBox.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    isLoading = false; 
+    getSearch();
+  }
+});
 
 function getSearch() {
   let searchKeyword = searchBox.value.trim();
@@ -17,102 +27,79 @@ function getSearch() {
   loadAttractions();
 }
 
-searchIcon.addEventListener('click', getSearch)
-searchBox.addEventListener('keydown', (event) => {
-  if (event.key === 'Enter') {
-    event.preventDefault(); 
-    getSearch();
-  }
-});
-
 async function getAttractions(page, keyword){
   let url = `/api/attractions?page=${page}`;
-
-  if (keyword) {
-    url += `&keyword=${encodeURIComponent(keyword)}`;
-  }
-  let response = await fetch(url, { method: "GET" });
+  if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
+  
+  let response = await fetch(url);
   let rawData = await response.json();
 
-  let nextPage = rawData.nextPage;
-  let spotsName = [];
-  let spotsCategory = [];
-  let spotsMrt = [];
-  let spotsImage = [];
-
-  for(let i=0;i<rawData.data.length;i++){
-    spotsName.push(rawData.data[i].name);
-    spotsCategory.push(rawData.data[i].category);
-    spotsMrt.push(rawData.data[i].mrt);
-    spotsImage.push(rawData.data[i].images);
-  }
-  return { nextPage, data:{ spotsName, spotsCategory, spotsMrt, spotsImage }};
+  let nextPage = rawData?.nextPage;
+  let data = rawData.data.map(({ name, category, mrt, images }) => ({
+    name, category, mrt, image: images[0]
+  }));
+  return { nextPage, data };
 }
 
 async function loadAttractions() {
-  if (page === null || page === undefined) return;
-
+  isLoading = true;
   let { nextPage, data } = await getAttractions(page, keyword);
-
-  for (let i = 0; i < data.spotsName.length; i++) {
+  
+  for (let i = 0; i < data.length; i++) {
     let attractionDiv = document.createElement("div");
     attractionDiv.classList.add("attractions__card");
-
-    attractionDiv.style.backgroundImage = `url(${data.spotsImage[i][0]})`;
+  
+    attractionDiv.style.backgroundImage = `url(${data[i].image})`;
     attractionDiv.style.backgroundSize = "cover";
     attractionDiv.style.backgroundPosition = "center";
-
+  
     let nameDiv = document.createElement("div");
     nameDiv.classList.add("attractions__card--overlay--name");
-    nameDiv.textContent = data.spotsName[i];
-
+    nameDiv.textContent = data[i].name;
+  
     let mrtDiv = document.createElement("div");
     mrtDiv.classList.add("attractions__card--info--mrt");
-    mrtDiv.textContent = data.spotsMrt[i];
-
+    mrtDiv.textContent = data[i].mrt;
+  
     let categoryDiv = document.createElement("div");
     categoryDiv.classList.add("attractions__card--info--category");
-    categoryDiv.textContent = data.spotsCategory[i];
-
+    categoryDiv.textContent = data[i].category;
+  
     let overlayDiv = document.createElement("div");
     overlayDiv.classList.add("attractions__card--overlay");
     overlayDiv.appendChild(nameDiv);
-
+  
     let infoDiv = document.createElement("div");
     infoDiv.classList.add("attractions__card--info");
     infoDiv.appendChild(mrtDiv);
     infoDiv.appendChild(categoryDiv);
-
+  
     attractionDiv.appendChild(overlayDiv);
     attractionDiv.appendChild(infoDiv);
-
+  
     attractionsDiv.appendChild(attractionDiv);
   }
   page = nextPage;
-  observeLastCard();
+  isLoading = false;
+  if (page !== null) observeLastCard();
 }
 
-async function observeLastCard() {
+function observeLastCard() {
   let allCards = document.querySelectorAll(".attractions__card");
-  if (allCards.length === 0) return;
+  if (!allCards.length || isLoading) return;
 
   let lastCard = allCards[allCards.length - 1];
-  if (observer) {
-    observer.disconnect();
-  }
+  if (observer) observer.disconnect();
+  
   let options = {
     root: null,
     rootMargin: "0px",
     threshold: 1.0,
   };
   observer = new IntersectionObserver(entries => {
-    if (entries[0].isIntersecting) {
+    if (entries[0].isIntersecting && !isLoading) {
       observer.unobserve(lastCard);
       loadAttractions();
-
-      setTimeout(() => {
-        observeLastCard();
-      }, 500);
     }
   }, options);
   observer.observe(lastCard);
@@ -120,8 +107,9 @@ async function observeLastCard() {
 
 async function getMrts(){
   let url = "/api/mrts";
-  let response = await fetch(url, { method: "GET" });
+  let response = await fetch(url);
   let rawData = await response.json();
+
   for (let station of rawData.data) { 
     const stationsDiv = document.createElement('div');
     stationsDiv.classList.add('list__container--station');
@@ -131,12 +119,11 @@ async function getMrts(){
   const listStationDiv = document.querySelectorAll('.list__container--station');
   for (let i=0;i<listStationDiv.length;i++){
     let stationDiv = listStationDiv[i];
-
     stationDiv.addEventListener('click', ()=>{
-      page = 0;
       keyword = stationDiv.textContent;
-      searchBox.value = stationDiv.textContent;
+      searchBox.value = keyword;
       attractionsDiv.innerHTML = '';
+      isLoading = false; 
       getSearch();
     });
   }
