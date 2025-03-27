@@ -470,6 +470,7 @@ input[type='radio']:checked {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    margin-top: 0px;
   }
   .attraction > *:first-child > * {
     margin-right: 0px;
