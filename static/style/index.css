@@ -200,7 +200,7 @@ main {
   text-overflow: ellipsis;
 }
 .attractions__card:hover {
-  filter: brightness(125%);
+  filter: brightness(85%);
   cursor: pointer; 
 }
 .attractions__card--overlay {
