@@ -1,0 +1,46 @@
+{% extends "index.html" %}
+
+{% block title %}
+  Attraction
+{% endblock %}
+
+{% block script %}
+<script defer src="{{ url_for('static', path='./script/attraction.js') }}"></script>
+{% endblock %}
+
+{% block section %}
+<div class="attraction">
+  <div class="picture">
+    <div class="picture__dot"></div>
+    <button class="picture__btn--left" id="leftArrow"></button>
+    <div class="picture__slideshow"></div>
+    <button class="picture__btn--right" id="rightArrow"></button>
+  </div>
+  <div class="profile">
+    <div class="profile__info"></div>
+    <div class="profile__booking">
+      <p>訂購導覽行程</p>
+      <span>以此景點為中心的一日行程，帶您探索城市角落故事</span>
+      <form id="profile__booking--form" action="#">
+        <div class="profile__booking--form--date">
+          <p>選擇日期：<input type="date" name="date" id="date"></p>
+        </div>
+        <div class="profile__booking--form--time">
+          <p>選擇時間：
+            <input type="radio" name="time" id="morning" value="morning" checked />
+            <label for="morning">上半天</label>
+            <input type="radio" name="time" id="afternoon" value="afternoon">
+            <label for="afternoon">下半天</label><br>
+          </p>
+        </div>
+        <p>導覽費用：<span id="money"></span></p>
+        <button class="profile__booking--form--btn" id="booking__btn">開始預約行程</button>
+      </form>
+    </div>
+  </div>
+<div>
+{% endblock %}
+
+{% block main %}
+<div class="infors"></div>
+{% endblock %}
