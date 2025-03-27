@@ -465,7 +465,7 @@ input[type='radio']:checked {
     font-size: clamp(1.3rem, 1.7rem, 30px);
   }
   .attraction {
-    width: 90vw;
+    width: 100vw;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -476,12 +476,23 @@ input[type='radio']:checked {
     margin-right: 0px;
   }
   .picture {
-    width: 90vw;
-    min-width: unset;
+    width: 100vw;
+    max-height: 350px;
+  }
+  .picture__slideshow {
+    border-radius: 0px;
+    object-fit: cover;
+  }
+  .picture__btn--left,
+  .picture__btn--left:hover {
+    left: 15px;
+  }
+  .picture__btn--right,
+  .picture__btn--right:hover {
+    right: 15px;
   }
   .profile {
     width: 90vw;
-    min-width: unset;
     margin-top: 20px;
   }
   .infors {
