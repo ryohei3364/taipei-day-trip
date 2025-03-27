@@ -94,8 +94,8 @@ async function renderDots(images) {
     });
     dotsContainer.appendChild(dotSpan);
   }
-  rightArrow.addEventListener("click", () => changeSlide(1));
-  leftArrow.addEventListener("click", () => changeSlide(-1));
+  rightArrow.addEventListener("click", () => changeSlide(1, images));
+  leftArrow.addEventListener("click", () => changeSlide(-1, images));
 
   currentIndex = 0;
   changeImage(images[currentIndex]);
@@ -110,7 +110,7 @@ async function changeImage(imageUrl) {
   newImage.src = imageUrl; 
 }
 
-async function changeSlide(direction) {
+async function changeSlide(direction, images) {
   currentIndex = (currentIndex + direction + images.length) % images.length;
   changeImage(images[currentIndex]);
   updateDots();
@@ -131,8 +131,8 @@ async function updateDots() {
 
 async function setupBooking(){
   document.getElementById("money").textContent = "新台幣 2000 元";
-  document.querySelectorAll('input[name="time"]').forEach(radio => {
-    radio.addEventListener("change", () => {
+  document.querySelectorAll('input[name="time"]').forEach(function (radio) {
+    radio.addEventListener("change", function () {
       if (this.value === "morning") {
         document.getElementById("money").textContent = "新台幣 2000 元";
       } else if (this.value === "afternoon") {
