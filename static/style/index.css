@@ -434,8 +434,8 @@ input[type='radio']:checked {
   }
 }
 @media (max-width: 650px),(max-width: 200px){
-  section {
-    margin-top: 0px;
+  menu {
+    margin-top: 54px;
   }
   .menu__item {
     width: 90vw;
