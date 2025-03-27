@@ -123,6 +123,9 @@ p {
 label, span {
   font-weight: 400;
 }
+input {
+  border: none;
+}
 main {
   width: 100%;
   min-height: 100vh;
@@ -334,9 +337,6 @@ footer {
   overflow-wrap: break-word;
   line-height: 1.5rem;
 }
-.profile__booking--form--date input {
-  border: none;
-}
 .profile__booking--form--btn {
   width: 154px;
   height: 36px;
@@ -434,6 +434,9 @@ input[type='radio']:checked {
   }
 }
 @media (max-width: 650px),(max-width: 200px){
+  section {
+    margin-top: 0px;
+  }
   .menu__item {
     width: 90vw;
     padding: 0px;
