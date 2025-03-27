@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>
+    {% block title %}
+    台北一日遊
+    {% endblock %}
+  </title>
+  <link rel="icon" href="./static/images/favicon.png" type="image/png">
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='./style/index.css') }}"/>
+  {% block script %}
+  <script defer src="{{ url_for('static', path='./script/index.js') }}"></script>
+  {% endblock %}
+</head>
+<body>
+  <nav class="menu">
+    <nav class="menu__item">
+      <div><a class="menu__item--logo" href="/">台北一日遊</a></div>
+      <div>
+        <a href="#">預定行程</a>
+        <a href="#">登入/註冊</a>
+      </div>
+    </nav>
+  </nav>
+  <section>
+    {% block section %}
+    <div class="background">
+      <div class="search">
+        <h1>輕鬆享受台北一日悠閒</h1>
+        <p>探索每個角落，體驗城市的深度旅遊行程</p>
+        <div class="search__input">
+          <input type="text" name="keyword" id="searchBox" placeholder="輸入景點名稱查詢">
+          <button class="search__input--btn" aria-label="搜尋" id="searchIcon">
+            <img src="static/images/search.png">
+          </button>
+        </div>
+      </div>
+    </div>
+    {% endblock %}
+  </section>
+
+  <main>
+    {% block main %}
+    <div class="list">
+      <button class="list__btn--left" id="leftScroll"></button>
+      <div class="list__container"></div>
+      <button class="list__btn--right" id="rightScroll"></button>
+      </div>
+    </div>
+    <div class="attractions"></div>
+    {% endblock %}
+  </main>
+  <footer>
+    <div class="footer__container">COPYRIGHT © 2021 台北一日遊</div>
+  </footer>
+</body>
+</html>
