@@ -10,6 +10,7 @@ const searchIcon = document.getElementById('searchIcon');
 const leftScroll = document.getElementById('leftScroll');
 const rightScroll = document.getElementById('rightScroll');
 
+
 searchIcon.addEventListener('click', getSearch)
 searchBox.addEventListener('keydown', (event) => {
   if (event.key === 'Enter') {
@@ -35,8 +36,8 @@ async function getAttractions(page, keyword){
   let rawData = await response.json();
 
   let nextPage = rawData?.nextPage;
-  let data = rawData.data.map(({ name, category, mrt, images }) => ({
-    name, category, mrt, image: images[0]
+  let data = rawData.data.map(({ id, name, category, mrt, images }) => ({
+    id, name, category, mrt, image: images[0]
   }));
   return { nextPage, data };
 }
@@ -52,6 +53,11 @@ async function loadAttractions() {
     attractionDiv.style.backgroundImage = `url(${data[i].image})`;
     attractionDiv.style.backgroundSize = "cover";
     attractionDiv.style.backgroundPosition = "center";
+
+    attractionDiv.addEventListener("click", () => {
+      // window.location.href = `/attraction/${data[i].id}`;
+      window.location.assign(`/attraction/${data[i].id}`);
+    });
   
     let nameDiv = document.createElement("div");
     nameDiv.classList.add("attractions__card--overlay--name");
@@ -76,7 +82,7 @@ async function loadAttractions() {
   
     attractionDiv.appendChild(overlayDiv);
     attractionDiv.appendChild(infoDiv);
-  
+
     attractionsDiv.appendChild(attractionDiv);
   }
   page = nextPage;

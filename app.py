@@ -1,6 +1,7 @@
 from fastapi import *
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.templating import Jinja2Templates
 from connection import sql_pool
 import json
 
@@ -145,10 +146,10 @@ async def station(request: Request):
 # Static Pages (Never Modify Code in this Block)
 @app.get("/", include_in_schema=False)
 async def index(request: Request):
-	return FileResponse("./static/index.html", media_type="text/html")
+	return templates.TemplateResponse(request=request, name="index.html")
 @app.get("/attraction/{id}", include_in_schema=False)
 async def attraction(request: Request, id: int):
-	return FileResponse("./static/attraction.html", media_type="text/html")
+	return templates.TemplateResponse(request=request, name="attraction.html")
 @app.get("/booking", include_in_schema=False)
 async def booking(request: Request):
 	return FileResponse("./static/booking.html", media_type="text/html")
@@ -157,3 +158,4 @@ async def thankyou(request: Request):
 	return FileResponse("./static/thankyou.html", media_type="text/html")
   
 app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="./static/templates")
