@@ -2,10 +2,151 @@ from fastapi import *
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.security import OAuth2PasswordBearer
 from connection import sql_pool
-import json
+from datetime import datetime, timedelta, timezone
+import os, json, jwt, bcrypt
 
 app=FastAPI()
+PRIVATE_KEY = os.getenv("PRIVATE_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+def hash_password(password):
+  input_password = password.encode("utf-8")
+  hashed_password = bcrypt.hashpw(input_password, bcrypt.gensalt()) 
+  return hashed_password.decode("utf-8")
+
+def check_password(password, hashed_password):
+  if isinstance(hashed_password, str):
+    hashed_password = hashed_password.encode("utf-8")
+  return bcrypt.checkpw(password.encode("utf-8"), hashed_password)
+
+def encoded_jwt(user):
+  exp_time = (datetime.now(tz=timezone.utc) + timedelta(days=7)).timestamp()
+  payload = {
+    "id": user['id'],
+    "name": user['name'],
+    "email": user['email'],
+    "exp": int(exp_time)
+  }
+  return jwt.encode(payload, PRIVATE_KEY, ALGORITHM)
+
+@app.post("/api/user")
+async def signup(request: Request):
+  cnx = None
+  result = await request.json()
+  name = result.get("name")
+  email = result.get("email")
+  password = result.get("password")
+  query = """
+    SELECT email, password FROM member WHERE email=%s
+  """
+  try:
+    cnx = sql_pool.get_connection()
+    with cnx.cursor(dictionary=True) as cursor:
+      cursor.execute(query, (email,))
+      user = cursor.fetchone()
+
+    if user:
+      return JSONResponse(
+        status_code=400,
+        headers={"content-type": "application/json;charset=utf-8"},
+        content={
+          "error": True,
+          "message": "Email 已註冊會員帳戶"
+        }
+      )
+    else:
+      print("資料庫無資料，需要寫入")
+      query = """
+        INSERT INTO member(name,email,password) VALUES(%s,%s,%s)
+      """ 
+      with cnx.cursor(dictionary=True) as cursor:
+        cursor.execute(query, (name,email,hash_password(password)))
+        cnx.commit() 
+        return JSONResponse(
+          status_code=200,
+          headers={"content-type": "application/json;charset=utf-8"},
+          content={
+            "ok": True,
+            "message": "註冊成功，請登入網站"
+          }
+        )
+  except Exception as e:
+    print(f"[ERROR] API 取得會員資料庫失敗: {e}")
+    return JSONResponse(
+      status_code=500,
+      headers={"content-type": "application/json;charset=utf-8"},
+      content={
+        "error": True,
+        "message": "伺服器內部錯誤"
+      }
+    )
+  finally:
+    if cnx:
+      cnx.close()
+
+@app.get("/api/user/auth")
+async def signin(request: Request, token: str = Depends(oauth2_scheme)):
+  try:
+    decoded_token = jwt.decode(token, PRIVATE_KEY, ALGORITHM)
+    return JSONResponse(
+      status_code=200,
+      headers={"content-type": "application/json;charset=utf-8"},
+      content={"data": decoded_token}
+    )
+  except Exception as e:
+    return {"data": None}
+  except jwt.ExpiredSignatureError:
+    return {"error": "使用者登入憑證已過期"}
+
+@app.put("/api/user/auth")
+async def login(request: Request):
+  result = await request.json()
+  email = result.get("email")
+  password = result.get("password")
+  query = """
+    SELECT id, name, email, password FROM member WHERE email=%s
+  """
+  try:
+    cnx = sql_pool.get_connection()
+    with cnx.cursor(dictionary=True) as cursor:
+      cursor.execute(query, (email,))
+      user = cursor.fetchone()
+      
+      if user and check_password(password, user["password"]):
+        return JSONResponse(
+          status_code=200,
+          headers={"content-type": "application/json;charset=utf-8"},
+          content={
+            "token": encoded_jwt(user),
+            "message": "登入成功，歡迎回來"
+          }
+        )
+      else:
+        return JSONResponse(
+          status_code=400,
+          headers={"content-type": "application/json;charset=utf-8"},
+          content={
+            "error": True,
+            "message": "電子郵件或密碼錯誤"
+          }
+        )
+  except Exception as e:
+    print(f"[ERROR] API 取得用戶資料庫失敗: {e}")
+    return JSONResponse(
+      status_code=500,
+      headers={"content-type": "application/json;charset=utf-8"},
+      content={
+        "error": True,
+        "message": "伺服器內部錯誤"
+      }
+    )
+  finally:
+    if cnx:
+      cnx.close()
+
 
 # 取得景點資料列表 /api/attractions?page=int&keyword=str
 @app.get("/api/attractions")
