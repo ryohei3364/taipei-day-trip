@@ -2,7 +2,6 @@ from fastapi import *
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
-from fastapi.security import OAuth2PasswordBearer
 from connection import sql_pool
 from datetime import datetime, timedelta, timezone
 import os, json, jwt, bcrypt
@@ -10,7 +9,6 @@ import os, json, jwt, bcrypt
 app=FastAPI()
 PRIVATE_KEY = os.getenv("PRIVATE_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def hash_password(password):
   input_password = password.encode("utf-8")
@@ -88,8 +86,10 @@ async def signup(request: Request):
       cnx.close()
 
 @app.get("/api/user/auth")
-async def signin(request: Request, token: str = Depends(oauth2_scheme)):
+async def signin(request: Request):
   try:
+    authorization = request.headers.get("Authorization")
+    token = authorization.split("Bearer ")[1]
     decoded_token = jwt.decode(token, PRIVATE_KEY, ALGORITHM)
     return JSONResponse(
       status_code=200,
