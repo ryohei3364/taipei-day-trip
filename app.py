@@ -12,7 +12,7 @@ ALGORITHM = os.getenv("ALGORITHM")
 
 def hash_password(password):
   input_password = password.encode("utf-8")
-  hashed_password = bcrypt.hashpw(input_password, bcrypt.gensalt()) 
+  hashed_password = bcrypt.hashpw(input_password, bcrypt.gensalt(rounds=4)) 
   return hashed_password.decode("utf-8")
 
 def check_password(password, hashed_password):
