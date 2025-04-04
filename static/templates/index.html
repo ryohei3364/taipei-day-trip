@@ -12,15 +12,17 @@
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='./style/index.css') }}"/>
   {% block script %}
   <script defer src="{{ url_for('static', path='./script/index.js') }}"></script>
+  <script defer src="{{ url_for('static', path='./script/member.js') }}"></script>
   {% endblock %}
 </head>
 <body>
   <nav class="menu">
     <nav class="menu__item">
       <div><a class="menu__item--logo" href="/">台北一日遊</a></div>
-      <div>
-        <a href="#">預定行程</a>
-        <a href="#">登入/註冊</a>
+      <div class="menu__item--container">
+        <div class="menu__item--container--booking" id="signLink">預定行程</div>
+        <div class="menu__item--container--signout" id="signLink">登出系統</div>
+        <div class="menu__item--container--user" id="signLink">登入/註冊</div>
       </div>
     </nav>
   </nav>
@@ -40,6 +42,32 @@
     </div>
     {% endblock %}
   </section>
+
+  <dialog id="signUpDialog">
+    <form id="signUp" onsubmit="signUp(event);">
+      <div id="userDialog__form--decorator"></div>
+      <div class="close"></div>
+      <h3>註冊會員帳號</h3>
+      <input type="text" id="signUp_name" placeholder="輸入姓名" required>
+      <input type="email" id="signUp_email" placeholder="輸入電子郵件" required>
+      <input type="password" id="signUp_password" placeholder="輸入密碼" autocomplete="off" required>
+      <button type="submit">註冊新帳戶</button>
+      <div id="signUp_message"></div>
+      <div id="signUp_sign">已經有帳戶了？<div id="signLink" onclick="switchToSignIn()">點此登入</div></div>
+    </form>
+  </dialog>  
+  <dialog id="signInDialog">
+    <form id="singIn" onsubmit="login(event);">
+      <div id="userDialog__form--decorator"></div>
+      <div class="close"></div>
+      <h3>登入會員帳號</h3>
+      <input type="email" id="email" placeholder="輸入電子郵件" required>
+      <input type="password" id="password" placeholder="輸入密碼" autocomplete="off" required>
+      <button type="submit">登入帳戶</button>
+      <div id="message"></div>
+      <div id="sign">還沒有帳戶？<div id="signLink" onclick="switchToSignUp()">點此註冊</div></div>
+    </form>
+  </dialog>
 
   <main>
     {% block main %}
