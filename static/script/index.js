@@ -10,7 +10,6 @@ const searchIcon = document.getElementById('searchIcon');
 const leftScroll = document.getElementById('leftScroll');
 const rightScroll = document.getElementById('rightScroll');
 
-
 searchIcon.addEventListener('click', getSearch)
 searchBox.addEventListener('keydown', (event) => {
   if (event.key === 'Enter') {
@@ -149,8 +148,5 @@ rightScroll.addEventListener('click', () => {
   listcontainerDiv.scrollBy({ left: 30, behavior: 'smooth' });
 });
 
-
-window.onload = function () {
-  loadAttractions();
-  getMrts();
-};
+loadAttractions();
+getMrts();
