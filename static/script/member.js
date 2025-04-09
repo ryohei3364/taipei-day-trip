@@ -46,6 +46,7 @@ async function login(event) {
     document.getElementById("message").textContent = result.message;
     updateUI(true);
     signInDialog.close();
+    location.reload();
   } else {
     document.getElementById("message").textContent = result.message;
   }
