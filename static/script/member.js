@@ -7,12 +7,14 @@ const navBookingBtn = document.querySelector('.menu__item--container--booking');
 const dateInput = document.getElementById('date');
 const token = localStorage.getItem("token");
 
+signinButton.style.display = "none";
+
 const today = new Date().toISOString().split('T')[0];
 dateInput.value = today;
 
-function updateUI(isAuthenticated) {
-  signinButton.style.display = isAuthenticated ? "none" : "block";
-  signoutButton.style.display = isAuthenticated ? "block" : "none";
+function updateUI(token) {
+  signinButton.style.display = token ? "none" : "block";
+  signoutButton.style.display = token ? "block" : "none";
 }
 
 async function checkUserInfo() {
