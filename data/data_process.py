@@ -49,7 +49,7 @@ for spot in spots:
         images.append(match.group(0))
         
   images_json = json.dumps(images)
-  val = (data_id, name, category, description, address, transport, mrt, lat, lng, images_json)
+  val = (id, name, category, description, address, transport, mrt, lat, lng, images_json)
   cursor.execute(query, val)  
 
 cnx.commit()

@@ -4,6 +4,12 @@
   Attraction
 {% endblock %}
 
+{% block link %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', path='./style/core.css') }}"/>  
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', path='./style/member.css') }}"/>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', path='./style/attraction.css') }}"/>
+{% endblock %}
+
 {% block script %}
 <script defer src="{{ url_for('static', path='./script/attraction.js') }}"></script>
 <script defer src="{{ url_for('static', path='./script/member.js') }}"></script>
@@ -22,20 +28,21 @@
     <div class="profile__booking">
       <p>訂購導覽行程</p>
       <span>以此景點為中心的一日行程，帶您探索城市角落故事</span>
-      <form id="profile__booking--form" action="#">
+      <form id="profile__booking--form" onsubmit="formBooking(event)">
         <div class="profile__booking--form--date">
           <p>選擇日期：<input type="date" name="date" id="date"></p>
         </div>
         <div class="profile__booking--form--time">
           <p>選擇時間：
-            <input type="radio" name="time" id="morning" value="morning" checked />
+            <input type="radio" name="time" class="time" value="morning" onclick="updatePrice()" checked/>
             <label for="morning">上半天</label>
-            <input type="radio" name="time" id="afternoon" value="afternoon">
+            <input type="radio" name="time" class="time" value="afternoon" onclick="updatePrice()">
             <label for="afternoon">下半天</label><br>
+            <input type="hidden" name="price" id="price" value="">
           </p>
         </div>
         <p>導覽費用：<span id="money"></span></p>
-        <button class="profile__booking--form--btn" id="booking__btn">開始預約行程</button>
+        <button type="submit" form="profile__booking--form" class="profile__booking--form--btn">開始預約行程</button>
       </form>
     </div>
   </div>

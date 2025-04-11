@@ -7,7 +7,6 @@ const inforsDiv = document.querySelector('.infors');
 const leftArrow = document.getElementById('leftArrow');
 const rightArrow = document.getElementById('rightArrow');
 
-
 document.addEventListener("DOMContentLoaded", async function () {
   let id = window.location.pathname.split("/").pop();
   if (id) {
@@ -15,7 +14,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (attractionData) {
       renderInfo(attractionData);
       renderDots(attractionData.images);
-      setupBooking();
+      updatePrice();
     }
   }
 });
@@ -27,7 +26,6 @@ async function getAttraction(id) {
     if (!rawData.data) throw new Error("API 回傳錯誤");
     return rawData.data;
   } catch (error) {
-    console.error(error);
     return null;
   }
 }
@@ -129,15 +127,16 @@ async function updateDots() {
   });
 }
 
-async function setupBooking(){
-  document.getElementById("money").textContent = "新台幣 2000 元";
-  document.querySelectorAll('input[name="time"]').forEach(function (radio) {
-    radio.addEventListener("change", function () {
-      if (this.value === "morning") {
-        document.getElementById("money").textContent = "新台幣 2000 元";
-      } else if (this.value === "afternoon") {
-        document.getElementById("money").textContent = "新台幣 2500 元";
-      }
-    });
-  });
+function updatePrice() {
+  const morning = document.querySelector('input[value="morning"]').checked;
+  const priceInput = document.getElementById("price");
+  const priceText = document.getElementById("money");
+
+  if (morning) {
+    priceInput.value = 2000;
+    priceText.textContent = "新台幣 2000 元";
+  } else {
+    priceInput.value = 2500;
+    priceText.textContent = "新台幣 2500 元";
+  }
 }
