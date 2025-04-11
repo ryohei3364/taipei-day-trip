@@ -3,14 +3,15 @@ const signoutButton = document.querySelector('.menu__item--container--signout');
 const signInDialog = document.getElementById('signInDialog');
 const signUpDialog = document.getElementById('signUpDialog');
 const closeButtons = document.querySelectorAll('.close');
-const navBookingBtn = document.querySelector('.menu__item--container--booking');
 const dateInput = document.getElementById('date');
-const token = localStorage.getItem("token");
+const navBookingBtn = document.querySelector('.menu__item--container--booking');
 
 signinButton.style.display = "none";
 
-const today = new Date().toISOString().split('T')[0];
-dateInput.value = today;
+if (dateInput) {
+  const today = new Date().toISOString().split('T')[0];
+  dateInput.value = today;
+}
 
 function updateUI(token) {
   signinButton.style.display = token ? "none" : "block";
@@ -18,6 +19,7 @@ function updateUI(token) {
 }
 
 async function checkUserInfo() {
+  const token = localStorage.getItem("token");
   if (token) {
     const response = await fetch("/api/user/auth", { 
       method: "GET",
@@ -28,6 +30,7 @@ async function checkUserInfo() {
     });
     const user = await response.json();
     if (user) {
+      console.log(user);
       updateUI(true);
       return true;
     } else {
@@ -51,6 +54,7 @@ async function handleBookingRedirect() {
 
 async function formBooking(event) {
   event.preventDefault();
+  // 首先檢查用戶是否已經登入
   if (!await checkUserInfo()) {
     signInDialog.showModal();
     return;
@@ -59,6 +63,7 @@ async function formBooking(event) {
   const date = document.getElementById("date").value;
   const time = document.querySelector('input[name="time"]:checked').value;
   const price = document.getElementById("price").value;
+  console.log(attractionId, date, time, price)
 
   if (!date || !time || !price) return;
 
@@ -72,7 +77,45 @@ async function formBooking(event) {
   });
   const result = await response.json();
   window.location.href = "/booking"; 
+  console.log(result);
 }
+
+navBookingBtn.addEventListener('click', handleBookingRedirect);
+
+// // 原本 GET 獲取表單寫法
+// async function booking(event) {
+//   event.preventDefault();
+//   const date = document.getElementById("date").value;
+//   const time = document.querySelector('input[name="time"]:checked').value;
+//   const price = document.getElementById("price").value;
+//   const attractionId = window.location.pathname.split("/").pop();
+//   console.log(date, time, price, attractionId)
+
+//   // GET method 無法加上body
+//   const response = await fetch(`/api/booking?date=${date}&time=${time}&price=${price}&attractionId=${attractionId}`, {
+//     method: "GET",
+//     headers: {
+//       'Content-Type': 'application/json',
+//       'Authorization': `Bearer ${token}`,
+//     },
+//   });
+//   const result = await response.json();
+//   console.log(result)
+// }
+
+// // 在表單提交前檢查用戶狀態
+// async function checkUserAndSubmit(event) {
+//   event.preventDefault();  // 阻止表單的默認提交行為
+//   const isUserAuthenticated = await checkUserInfo();
+
+//   if (isUserAuthenticated) {
+//     // 如果用戶已經登入，允許提交表單
+//     document.getElementById("profile__booking--form").submit();
+//   } else {
+//     // 如果用戶未登入，顯示提示並阻止表單提交
+//     signInDialog.showModal();  // 顯示登入對話框
+//   }
+// }
 
 async function login(event) {
   event.preventDefault();
@@ -143,6 +186,5 @@ closeButtons.forEach((btn) => {
   });
 });
 
-updateUI(token);
+// updateUI(token);
 checkUserInfo();
-navBookingBtn.addEventListener('click', handleBookingRedirect);
