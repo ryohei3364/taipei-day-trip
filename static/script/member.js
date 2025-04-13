@@ -3,7 +3,16 @@ const signoutButton = document.querySelector('.menu__item--container--signout');
 const signInDialog = document.getElementById('signInDialog');
 const signUpDialog = document.getElementById('signUpDialog');
 const closeButtons = document.querySelectorAll('.close');
+const dateInput = document.getElementById('date');
+const navBookingBtn = document.querySelector('.menu__item--container--booking');
 const token = localStorage.getItem("token");
+
+signinButton.style.display = "none";
+
+if (dateInput) {
+  const today = new Date().toISOString().split('T')[0];
+  dateInput.value = today;
+}
 
 function updateUI(token) {
   signinButton.style.display = token ? "none" : "block";
@@ -22,12 +31,52 @@ async function checkUserInfo() {
     const user = await response.json();
     if (user) {
       updateUI(true);
+      return true;
     } else {
       localStorage.removeItem("token");
       updateUI(false);
+      return false;
     }
+  } else {
+    updateUI(false);
+    return false;
   }
 }
+
+async function handleBookingRedirect() {
+  if (await checkUserInfo()) {
+    window.location.href = "/booking";
+  } else {
+    signInDialog.showModal();
+  }
+}
+
+async function formBooking(event) {
+  event.preventDefault();
+  if (!await checkUserInfo()) {
+    signInDialog.showModal();
+    return;
+  }
+  const attractionId = window.location.pathname.split("/").pop();
+  const date = document.getElementById("date").value;
+  const time = document.querySelector('input[name="time"]:checked').value;
+  const price = document.getElementById("price").value;
+
+  if (!date || !time || !price) return;
+
+  const response = await fetch('/api/booking', {
+    method: "POST",
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ attractionId, date, time, price })
+  });
+  const result = await response.json();
+  window.location.href = "/booking"; 
+}
+
+navBookingBtn.addEventListener('click', handleBookingRedirect);
 
 async function login(event) {
   event.preventDefault();
@@ -45,8 +94,7 @@ async function login(event) {
     localStorage.setItem("token", result.token);
     document.getElementById("message").textContent = result.message;
     updateUI(true);
-    signInDialog.close();
-    location.reload();
+    location.reload(); 
   } else {
     document.getElementById("message").textContent = result.message;
   }
@@ -74,6 +122,7 @@ async function signUp(event) {
 
 signoutButton.addEventListener("click", () => {
   localStorage.removeItem("token");
+  window.location.reload();
   updateUI(false);
 });
 
@@ -98,5 +147,4 @@ closeButtons.forEach((btn) => {
   });
 });
 
-updateUI(token);
 checkUserInfo();

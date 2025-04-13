@@ -1,0 +1,122 @@
+@import url("https://fonts.googleapis.com/earlyaccess/notosanstc.css");
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  font-family: 'Noto Sans TC';
+  font-size: 16px;
+  white-space: nowrap; 
+  margin: 0;
+}
+:root {
+  --grey70-color: #666666;
+  --grey50-color: #757575;
+  --grey20-color: #E8E8E8;
+  --cyan20-color: #AADDEE;
+  --cyan50-color: #66AABB;
+  --cyan70-color: #448899;
+  --darkcyan-color: #337788;
+}
+body {
+  overflow-y: scroll;
+}
+.menu {
+  width: 100%;
+  height: 54px;
+  position: fixed;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  background-color: white;
+  border-bottom: 1px solid var(--grey20-color);
+}
+.menu__item {
+  width: 1200px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+}
+.menu__item--logo {
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--cyan70-color);
+}
+.menu__item--logo:hover {
+  color: var(--darkcyan-color);
+}
+.menu__item--container {
+  display: flex;  
+  justify-content: space-between;
+  color: var(--grey70-color);
+}
+.menu__item--container a {
+  margin-left: 20px;
+}
+a {
+  color: var(--grey70-color);
+  text-decoration: none;
+}
+h1 {
+  font-size: 28px;
+  font-weight: 500;
+  margin-bottom: 15px;
+}
+h2 {
+  font-size: 30px;
+  font-weight: 600;
+}
+h3 {
+  font-size: 24px;
+  font-weight: 600;
+}
+p {
+  font-weight: 500;
+}
+label, span {
+  font-weight: 400;
+}
+input {
+  text-indent: 10px;
+  border: none;
+}
+footer {
+  height: 104px;
+  display: flex;
+  color: white;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--grey50-color);
+  margin-top: 40px;
+}
+
+
+@media (max-width: 1200px),(max-width: 850px){
+  .menu__item {
+    width: 90vw;
+  } 
+}
+@media (max-width: 1200px) {
+
+}
+@media (max-width: 850px) {
+  
+}
+@media (max-width: 650px),(max-width: 200px){
+  menu {
+    margin-top: 54px;
+  }
+  .menu__item {
+    width: 90vw;
+    padding: 0px;
+  }
+ 
+  a {
+    font-size: 1rem;
+  }
+  h2 {
+    font-size: clamp(1.3rem, 1.7rem, 30px);
+  }
+}

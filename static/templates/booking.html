@@ -1,11 +1,88 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Booking</title>
-</head>
-<body>
+{% extends "attraction.html" %}
+
+  {% block title %}
+    Booking
+  {% endblock %}
   
-</body>
-</html>
+  {% block link %}
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='./style/core.css') }}"/>  
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='./style/member.css') }}"/>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='./style/booking.css') }}"/>
+  {% endblock %}
+  
+  {% block script %}
+  <script defer src="{{ url_for('static', path='./script/booking.js') }}"></script>
+  <script defer src="{{ url_for('static', path='./script/member.js') }}"></script>
+  {% endblock %}
+  
+  {% block section %}
+  <section class="booking--section">
+    <div class="booking--wrapper">
+      <h3 class="booking--greeting">您好，<span id="booking--username"></span>，待預訂的行程如下：</h3>
+      <div class="booking--container">
+        <div class="booking--image" id="booking--image"></div>
+        <div class="booking--info">
+          <div class="booking--info--data">
+            <p class="booking--title">台北一日遊：<span id="booking--name"></span></p>
+            <p>日期：<span id="booking--date"></span></p>
+            <p>時間：<span id="booking--time"></span></p>
+            <p>費用：<span>新台幣 <span id="booking--price"></span> 元</span></p>
+            <p>地點：<span id="booking--address"></span></p>
+          </div>
+          <button class="booking--info--delete" id="deleteButton"></button>
+        </div>
+      </div>
+    </div>
+    <div class="booking--divider"></div>
+
+    <div class="booking--wrapper">
+      <form class="booking--form">
+        <h3>您的聯絡資訊</h3>
+        <div class="booking--form--container">
+          <label for="booking--username">聯絡姓名：</label>
+          <input type="text" id="booking--username--input" name="booking--username"></input>
+        </div>
+        <div class="booking--form--container">
+          <label for="booking--email">聯絡信箱：</label>
+          <input type="text" id="booking--email" name="booking--email"></input>
+        </div>
+        <div class="booking--form--container">
+          <label for="booking--mobile">手機號碼：</label>
+          <input type="text" pattern="[0-9]{10}" id="booking--mobile" name="booking--mobile" autocomplete="on" required></input>
+        </div>
+        <div class="booking--form--container">
+          <p>請保持手機暢通，準時到達，導覽人員將用手機與您聯繫，務必留下正確的聯絡方式。</p>
+        </div>
+      </form>
+    </div>
+    <div class="booking--divider"></div>
+
+    <div class="booking--wrapper">
+      <form class="booking--form">
+        <h3>信用卡付款資訊</h3>
+        <div class="booking--form--container">
+          <label for="booking--ccnumber">卡片號碼：</label>
+          <input type="tel" pattern="[0-9\s]{13,19}" id="booking--ccnumber" name="booking--ccnumber" placeholder="**** **** **** ****" required></input>
+        </div>
+        <div class="booking--form--container">
+          <label for="booking--ccexp">過期時間：</label>
+          <input type="month" id="booking--ccexp" name="booking--ccexp" placeholder="MM / YY" required></input>
+        </div>
+        <div class="booking--form--container">
+          <label for="booking--cccvv">驗證密碼：</label>
+          <input type="text" pattern="[0-9]{3,4}" id="booking--cccvv" name="booking--cccvv" placeholder="CVV" required></input>
+        </div>
+      </form>
+    </div>
+    <div class="booking--divider"></div>
+    <div class="booking--wrapper">
+      <div class="booking--total">
+        <p>總價：新台幣 <span id="booking--sum"></span> 元</p>
+        <div class="profile__booking--form--btn">確認訂購並付款</div>
+      </div>
+    </div>
+  </section>
+  {% endblock %}
+  
+  {% block main %}
+  {% endblock %}

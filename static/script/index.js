@@ -54,7 +54,6 @@ async function loadAttractions() {
     attractionDiv.style.backgroundPosition = "center";
 
     attractionDiv.addEventListener("click", () => {
-      // window.location.href = `/attraction/${data[i].id}`;
       window.location.assign(`/attraction/${data[i].id}`);
     });
   

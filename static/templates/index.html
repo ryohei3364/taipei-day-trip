@@ -9,7 +9,12 @@
     {% endblock %}
   </title>
   <link rel="icon" href="./static/images/favicon.png" type="image/png">
+  {% block link %}
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='./style/core.css') }}"/>  
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='./style/member.css') }}"/>
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='./style/index.css') }}"/>
+  {% endblock %}
+
   {% block script %}
   <script defer src="{{ url_for('static', path='./script/index.js') }}"></script>
   <script defer src="{{ url_for('static', path='./script/member.js') }}"></script>
@@ -20,9 +25,9 @@
     <nav class="menu__item">
       <div><a class="menu__item--logo" href="/">台北一日遊</a></div>
       <div class="menu__item--container">
-        <div class="menu__item--container--booking" id="signLink">預定行程</div>
-        <div class="menu__item--container--signout" id="signLink">登出系統</div>
-        <div class="menu__item--container--user" id="signLink">登入/註冊</div>
+        <a class="menu__item--container--booking" id="signLink">預定行程</a>
+        <a class="menu__item--container--signout" id="signLink">登出系統</a>
+        <a class="menu__item--container--user" id="signLink">登入/註冊</a>
       </div>
     </nav>
   </nav>
