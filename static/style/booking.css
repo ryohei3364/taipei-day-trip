@@ -110,7 +110,7 @@ button {
 .tpfield {
   width: 200px;
   height: 38px;
-  padding: 5px;
+  padding-left: 15px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 16px;
