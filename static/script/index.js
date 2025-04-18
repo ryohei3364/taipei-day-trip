@@ -33,6 +33,7 @@ async function getAttractions(page, keyword){
   
   let response = await fetch(url);
   let rawData = await response.json();
+  console.log(rawData);
 
   let nextPage = rawData?.nextPage;
   let data = rawData.data.map(({ id, name, category, mrt, images }) => ({
@@ -48,6 +49,7 @@ async function loadAttractions() {
   for (let i = 0; i < data.length; i++) {
     let attractionDiv = document.createElement("div");
     attractionDiv.classList.add("attractions__card");
+    attractionDiv.id = `attraction-${data[i].id}`;
   
     attractionDiv.style.backgroundImage = `url(${data[i].image})`;
     attractionDiv.style.backgroundSize = "cover";

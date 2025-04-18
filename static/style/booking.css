@@ -72,6 +72,7 @@ h3 {
 }
 .booking--form input {
   width: 200px;
+  height: 38px;
   padding: 5px;
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -81,7 +82,7 @@ h3 {
   flex-direction: column;
   align-items: end;
 }
-.profile__booking--form--btn {
+#submit-button {
   width: 154px;
   height: 36px;
   display: flex;
@@ -93,7 +94,7 @@ h3 {
   border: none;
   margin-top: 20px;
 }
-.profile__booking--form--btn:hover {
+#submit-button:hover {
   background-color: var(--darkcyan-color);
   cursor: pointer; 
 }
@@ -104,6 +105,20 @@ button {
 .booking--notice {
   margin-top: 10px;
   margin-bottom: 50vw;
+}
+/* tappay */
+.tpfield {
+  width: 200px;
+  height: 38px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+#submit-button {
+  padding: 10px 20px;
+  font-size: 16px;
 }
 
 @media (max-width: 1200px),(max-width: 650px){
@@ -148,3 +163,4 @@ button {
     white-space: normal;
   }
 }
+

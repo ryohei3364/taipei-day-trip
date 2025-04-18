@@ -45,14 +45,6 @@ section {
 .search__input--btn img{
   margin: 6px auto;
 }
-
-main {
-  width: 100%;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
 .list {
   width: 1200px;
   height: 50x;
