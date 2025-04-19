@@ -11,8 +11,10 @@
   {% endblock %}
   
   {% block script %}
-  <script defer src="{{ url_for('static', path='./script/booking.js') }}"></script>
+  <script defer src="https://js.tappaysdk.com/sdk/tpdirect/v5.14.0"></script>
   <script defer src="{{ url_for('static', path='./script/member.js') }}"></script>
+  <script defer src="{{ url_for('static', path='./script/booking.js') }}"></script>
+  <script defer src="{{ url_for('static', path='./script/order.js') }}"></script>
   {% endblock %}
   
   {% block section %}
@@ -36,19 +38,19 @@
     <div class="booking--divider"></div>
 
     <div class="booking--wrapper">
-      <form class="booking--form">
+      <form class="booking--form" id="booking--form--contact">
         <h3>您的聯絡資訊</h3>
         <div class="booking--form--container">
-          <label for="booking--username">聯絡姓名：</label>
-          <input type="text" id="booking--username--input" name="booking--username"></input>
+          <label for="booking--input--username">聯絡姓名：</label>
+          <input type="text" id="booking--input--username" name="booking--input--username">
         </div>
         <div class="booking--form--container">
-          <label for="booking--email">聯絡信箱：</label>
-          <input type="text" id="booking--email" name="booking--email"></input>
+          <label for="booking--input--email">聯絡信箱：</label>
+          <input type="text" id="booking--input--email" name="booking--input--email">
         </div>
         <div class="booking--form--container">
-          <label for="booking--mobile">手機號碼：</label>
-          <input type="text" pattern="[0-9]{10}" id="booking--mobile" name="booking--mobile" autocomplete="on" required></input>
+          <label for="booking--input--mobile">手機號碼：</label>
+          <input type="text" pattern="[0-9]{10}" id="booking--input--mobile" name="booking--input--mobile" autocomplete="on" required>
         </div>
         <div class="booking--form--container">
           <p>請保持手機暢通，準時到達，導覽人員將用手機與您聯繫，務必留下正確的聯絡方式。</p>
@@ -58,19 +60,19 @@
     <div class="booking--divider"></div>
 
     <div class="booking--wrapper">
-      <form class="booking--form">
+      <form class="booking--form" id="booking--form--card">
         <h3>信用卡付款資訊</h3>
         <div class="booking--form--container">
           <label for="booking--ccnumber">卡片號碼：</label>
-          <input type="tel" pattern="[0-9\s]{13,19}" id="booking--ccnumber" name="booking--ccnumber" placeholder="**** **** **** ****" required></input>
+          <div class="tpfield" id="booking--ccnumber"></div>
         </div>
         <div class="booking--form--container">
           <label for="booking--ccexp">過期時間：</label>
-          <input type="month" id="booking--ccexp" name="booking--ccexp" placeholder="MM / YY" required></input>
+          <div class="tpfield" id="booking--ccexp"></div>
         </div>
         <div class="booking--form--container">
           <label for="booking--cccvv">驗證密碼：</label>
-          <input type="text" pattern="[0-9]{3,4}" id="booking--cccvv" name="booking--cccvv" placeholder="CVV" required></input>
+          <div class="tpfield" id="booking--cccvv"></div>
         </div>
       </form>
     </div>
@@ -78,7 +80,7 @@
     <div class="booking--wrapper">
       <div class="booking--total">
         <p>總價：新台幣 <span id="booking--sum"></span> 元</p>
-        <div class="profile__booking--form--btn">確認訂購並付款</div>
+        <button id="submit-button">確認訂購並付款</button>
       </div>
     </div>
   </section>

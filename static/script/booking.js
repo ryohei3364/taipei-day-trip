@@ -3,14 +3,14 @@ const container = document.querySelector('.booking--container');
 const allDividers = document.querySelectorAll('.booking--divider');
 const allWrappers = document.querySelectorAll('.booking--wrapper');
 const usernameText = document.getElementById('booking--username');
-const usernameInput = document.querySelector('input[name="booking--username"]');
+const usernameInput = document.getElementById('booking--input--username');
 const imageUrl = document.getElementById('booking--image');
 const nameText = document.getElementById('booking--name');
 const dateText = document.getElementById('booking--date');
 const timeText = document.getElementById('booking--time');
 const priceText = document.getElementById('booking--price');
 const addressText = document.getElementById('booking--address');
-const emailText = document.getElementById('booking--email');
+const emailText = document.getElementById('booking--input--email');
 const sumText = document.getElementById('booking--sum');
 const deleteButton = document.getElementById('deleteButton');
 
@@ -47,6 +47,8 @@ async function renderBooking() {
     ]);
     const user = await userResponse.json();
     const result = await bookingResponse.json();
+    // console.log(user.data)
+    // console.log(result.data.attraction)
 
     if (user.data.name) {
       usernameText.textContent = user.data.name;

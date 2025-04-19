@@ -4,11 +4,15 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from dbconf import sql_pool
 from datetime import datetime, timedelta, timezone
-import os, json, jwt, bcrypt
+import os, json, jwt, bcrypt, random, requests
 
 app=FastAPI()
 PRIVATE_KEY = os.getenv("PRIVATE_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
+PARTNER_KEY = os.getenv("PARTNER_KEY")
+MERCHANT_ID = os.getenv("MERCHANT_ID")
+
+TAPPAY_URL = "https://sandbox.tappaysdk.com/tpc/payment/pay-by-prime"
 
 def hash_password(password):
   input_password = password.encode("utf-8")
@@ -47,20 +51,98 @@ def get_current_user(request: Request):
   except jwt.ExpiredSignatureError:
     return {"error": "使用者登入憑證已過期"}
 
-@app.get("/api/booking")
-async def current_booking(request: Request, user=Depends(get_current_user)):
-  if isinstance(user, JSONResponse):
-    return user
-  userId = user['data']['id']
+def get_booking_by_userId(userId: int):
   query = """
-    SELECT * FROM attraction INNER JOIN booking ON attraction.id=booking.attractionId WHERE booking.userId=%s;
+    SELECT * FROM attraction 
+    INNER JOIN booking ON attraction.id=booking.attractionId 
+    WHERE booking.userId=%s;
   """
   try:
     cnx = sql_pool.get_connection()
     with cnx.cursor(dictionary=True) as cursor:
       cursor.execute(query, (userId,))
       result = cursor.fetchone()
-      if result is None:
+      return result
+  except:
+    return None
+  finally:
+    if cnx:
+      cnx.close()
+      
+def generate_order_number():
+  timestamp = datetime.now(tz=timezone.utc).strftime("%Y%m%d")
+  random_token = ''.join(str(random.randint(0, 9)) for _ in range(6))
+  order_number = f"{timestamp}{random_token}"
+  return order_number
+
+def pay_by_prime(prime, order_number, amount, contact_name, contact_email, contact_phone):
+    headers = {
+        "Content-Type": "application/json",
+        "x-api-key": PARTNER_KEY
+    }
+    payload = {
+        "prime": prime,
+        "partner_key": PARTNER_KEY,
+        "merchant_id": MERCHANT_ID,
+        "details": "TapPay Test",
+        "amount": amount,
+        "cardholder": {
+            "phone_number": contact_phone,
+            "name": contact_name,
+            "email": contact_email,
+        },
+        "order_number": order_number
+    }
+    response = requests.post(TAPPAY_URL, headers=headers, json=payload)
+    return response.json()
+      
+@app.get("/api/order/{orderNumber}")
+async def current_order(orderNumber: str, request: Request, user=Depends(get_current_user)):
+  orderNumber = orderNumber.strip()
+  if isinstance(user, JSONResponse):
+    return user
+  query = """
+    SELECT * FROM orders WHERE orderNumber=%s
+  """
+  try:
+    cnx = sql_pool.get_connection()
+    with cnx.cursor(dictionary=True) as cursor:
+      cursor.execute(query, (orderNumber,))
+      order = cursor.fetchone()
+      
+      if order:
+        userId = user['data']['id']
+        attraction = get_booking_by_userId(userId)
+        images = json.loads(attraction["images"])
+        image = images[0]
+
+        return JSONResponse(
+          status_code=200,
+          headers={"content-type": "application/json;charset=utf-8"},
+          content={
+            "data": {
+              "number": orderNumber,
+              "price": order['price'],
+              "trip": {
+                "attraction": {
+                  "id": attraction['id'],
+                  "name": attraction['name'],
+                  "address": attraction['address'],
+                  "image": image
+                },
+                "date": str(order['date']),
+                "time": order['time']
+              },
+              "contact": {
+                "name": order['contactName'],
+                "email": order['contactEmail'],
+                "phone": order['contactPhone'],
+              },
+              "status": order['status']
+            }
+          }
+        )
+      else:
         return JSONResponse(
           status_code=200,
           headers={"content-type": "application/json;charset=utf-8"},
@@ -68,7 +150,163 @@ async def current_booking(request: Request, user=Depends(get_current_user)):
             "data": None
           }
         )
-      attractionId = result.get("attractionId")
+        
+  except Exception as e:
+    print("訂單建立失敗：", e)
+    return JSONResponse(
+      status_code=500,
+      headers={"content-type": "application/json;charset=utf-8"},
+      content={
+        "error": True,
+        "message": "伺服器內部錯誤"
+      }
+    )
+  finally:
+    if cnx:
+      cnx.close()
+    
+          
+@app.post("/api/orders")
+async def current_order(request: Request, user=Depends(get_current_user)):
+  if isinstance(user, JSONResponse):
+    return user
+  result = await request.json()
+
+  if result is None:
+    return JSONResponse(
+      status_code=400,
+      headers={"content-type": "application/json;charset=utf-8"},
+      content={
+        "error": True,
+        "message": "訂單資訊不完整"
+      }
+    )
+  number = generate_order_number()
+  userId = user['data']['id']
+  data = get_booking_by_userId(userId)
+  bookingId = data['bookingId']
+  date = result['order']['trip']['date']
+  time = result['order']['trip']['time']
+  contactName = result['order']['contact']['name']
+  contactEmail = result['order']['contact']['email']
+  contactPhone = result['order']['contact']['phone']
+  prime = result['prime']
+  price = result['order']['price']
+  
+  insert_query = """
+    INSERT INTO orders(orderNumber,bookingId,date,time,price,contactName,contactEmail,contactPhone,status) 
+    VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)
+  """
+  check_existing_order_query = """
+    SELECT * FROM orders WHERE bookingId = %s AND status = 1
+  """
+  update_status_query = """
+    UPDATE orders SET status = 0 WHERE bookingId = %s
+  """
+  delete_booking_query = """
+    DELETE FROM booking WHERE bookingId = %s
+  """
+  try:
+    cnx = sql_pool.get_connection()
+    with cnx.cursor(dictionary=True) as cursor:
+      cursor.execute(check_existing_order_query, (bookingId,))
+      existing_order = cursor.fetchone()
+      
+      if existing_order:
+        number = existing_order['orderNumber']
+        tappay_result = pay_by_prime(prime, number, price, contactName, contactEmail, contactPhone)
+          
+        if tappay_result.get("status") == 0:
+          with cnx.cursor(dictionary=True) as cursor:
+            cursor.execute(update_status_query, (bookingId,))
+            cursor.execute(delete_booking_query, (bookingId,))
+            cnx.commit()
+          return JSONResponse(
+            status_code=200,
+            headers={"content-type": "application/json;charset=utf-8"},
+            content={
+              "data": {
+                "number": number,
+                "payment": {
+                  "status": 0,
+                  "image": "付款成功"  
+                }
+              }
+            }
+          )
+        else:
+          return JSONResponse(
+            status_code=400,
+            headers={"content-type": "application/json;charset=utf-8"},
+            content={
+              "error": True,
+              "message": "已有未付款訂單，且付款驗證失敗，TapPay status: " + str(tappay_result.get("status"))
+            }
+          )
+      cursor.execute(insert_query, (number,bookingId,date,time,price,contactName,contactEmail,contactPhone,1))
+      cnx.commit()
+    
+    tappay_result = pay_by_prime(prime, number, price, contactName, contactEmail, contactPhone)
+
+    if tappay_result.get("status") == 0:
+      with cnx.cursor(dictionary=True) as cursor:
+        cursor.execute(update_status_query, (bookingId,))
+        cursor.execute(delete_booking_query, (bookingId,))
+        cnx.commit()
+      return JSONResponse(
+        status_code=200,
+        headers={"content-type": "application/json;charset=utf-8"},
+        content={
+          "data": {
+            "number": number,
+            "payment": {
+              "status": 0,
+              "image": "付款成功"
+            }
+          }
+        }
+      )
+    else:
+      return JSONResponse(
+        status_code=400,
+        headers={"content-type": "application/json;charset=utf-8"},
+        content={
+          "error": True,
+          "message": "付款失敗，TapPay status: " + str(tappay_result.get("status"))
+        }
+      )
+
+  except Exception as e:
+    print("訂單建立失敗：", e)
+    return JSONResponse(
+      status_code=500,
+      headers={"content-type": "application/json;charset=utf-8"},
+      content={
+        "error": True,
+        "message": "伺服器內部錯誤"
+      }
+    )
+  finally:
+    if cnx:
+      cnx.close()
+
+@app.get("/api/booking")
+async def current_booking(request: Request, user=Depends(get_current_user)):
+  if isinstance(user, JSONResponse):
+    return user
+  userId = user['data']['id']
+  result = get_booking_by_userId(userId)
+  try: 
+    if result is None:
+      return JSONResponse(
+        status_code=200,
+        headers={"content-type": "application/json;charset=utf-8"},
+        content={
+          "data": None
+        }
+      )
+    else:
+      attractionId = result.get("id")
       name = result.get("name")
       address = result.get("address")
       date = result.get("date")
@@ -102,9 +340,6 @@ async def current_booking(request: Request, user=Depends(get_current_user)):
         "message": "伺服器內部錯誤"
       }
     )
-  finally:
-    if cnx:
-      cnx.close() 
 
 @app.post("/api/booking")
 async def update_booking(request: Request, user=Depends(get_current_user)):
@@ -137,7 +372,6 @@ async def update_booking(request: Request, user=Depends(get_current_user)):
       cursor.execute(select_query, (userId,))
       existing = cursor.fetchone()
       if existing:
-        print("已有預約資料，準備刪除舊的")
         cursor.execute(delete_query, (userId,))
       if time == "morning":
         time = "上午 9 點到下午 4 點"
@@ -208,7 +442,6 @@ def delete_booking(request: Request, user=Depends(get_current_user)):
 
 @app.post("/api/user")
 async def signup(request: Request):
-  cnx = None
   result = await request.json()
   name = result.get("name")
   email = result.get("email")
@@ -310,12 +543,10 @@ async def login(request: Request):
 def signin(user=Depends(get_current_user)):
   return user
   
-# 取得景點資料列表 /api/attractions?page=int&keyword=str
 @app.get("/api/attractions")
 async def search(page: int=0, keyword: str=None):
   PAGE_SIZE = 12
   offset = page * PAGE_SIZE
-  cnx = None
   
   base_query = """
     SELECT id, name, category, description, address, transport, mrt, lat, lng, images
@@ -367,9 +598,8 @@ async def search(page: int=0, keyword: str=None):
       cnx.close()
     
 
-@app.get("/api/attraction/{attractionId}")
-async def get_attraction(attractionId: int):
-  cnx = None
+@app.get("/api/attraction/{id}")
+async def get_attraction(id: int):
   query = """
     SELECT id, name, category, description, address, transport, mrt, lat, lng, images
     FROM attraction WHERE id=%s
@@ -377,7 +607,7 @@ async def get_attraction(attractionId: int):
   try:
     cnx = sql_pool.get_connection()
     with cnx.cursor(dictionary=True) as cursor:
-      cursor.execute(query, (attractionId,))
+      cursor.execute(query, (id,))
       data = cursor.fetchone()
     
     if data:
@@ -454,8 +684,8 @@ async def attraction(request: Request, id: int):
 async def booking(request: Request):
 	return templates.TemplateResponse(request=request, name="booking.html")
 @app.get("/thankyou", include_in_schema=False)
-async def thankyou(request: Request):
-  return templates.TemplateResponse(request=request, name="thankyou.html")
+async def thankyou(request: Request, number: str):
+  return templates.TemplateResponse(request=request, name="thankyou.html", context={"message": number})
   
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="./static/templates")
