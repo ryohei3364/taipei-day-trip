@@ -33,12 +33,9 @@ async function getAttractions(page, keyword){
   
   let response = await fetch(url);
   let rawData = await response.json();
-  console.log(rawData);
 
   let nextPage = rawData?.nextPage;
-  let data = rawData.data.map(({ id, name, category, mrt, images }) => ({
-    id, name, category, mrt, image: images[0]
-  }));
+  let data = rawData.data;
   return { nextPage, data };
 }
 
@@ -51,7 +48,7 @@ async function loadAttractions() {
     attractionDiv.classList.add("attractions__card");
     attractionDiv.id = `attraction-${data[i].id}`;
   
-    attractionDiv.style.backgroundImage = `url(${data[i].image})`;
+    attractionDiv.style.backgroundImage = `url(${data[i].images})`;
     attractionDiv.style.backgroundSize = "cover";
     attractionDiv.style.backgroundPosition = "center";
 

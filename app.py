@@ -2,7 +2,8 @@ from fastapi import *
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
-from dbconf import sql_pool
+from model.dbconf import sql_pool
+from model.model import Attraction
 from datetime import datetime, timedelta, timezone
 import os, json, jwt, bcrypt, random, requests
 
@@ -545,99 +546,35 @@ def signin(user=Depends(get_current_user)):
   
 @app.get("/api/attractions")
 async def search(page: int=0, keyword: str=None):
-  PAGE_SIZE = 12
-  offset = page * PAGE_SIZE
-  
-  base_query = """
-    SELECT id, name, category, description, address, transport, mrt, lat, lng, images
-    FROM attraction
-  """
-  page_query = " LIMIT %s OFFSET %s"
-  
-  if keyword:
-    keyword_query = " WHERE name LIKE %s OR mrt = %s"
-    full_query = base_query + keyword_query + page_query
-    keyword_param = f"%{keyword}%"
-    params = (keyword_param, keyword, PAGE_SIZE, offset)
-  else:
-    full_query = base_query + page_query
-    params = (PAGE_SIZE, offset)
-  
-  try:
-    cnx = sql_pool.get_connection()
-    with cnx.cursor(dictionary=True) as cursor:
-      cursor.execute(full_query, params)
-      data = cursor.fetchall()
-  
-    next_page = page + 1 if len(data) == PAGE_SIZE else None
-
-    if data:
-      for spot in data:
-        spot['images'] = json.loads(spot['images'])
-      
-      return JSONResponse(
-        headers={"content-type": "application/json;charset=utf-8"},
-        content={
-          "nextPage": next_page,
-          "data": data,
-        }
-      )
-      
-  except Exception as e:
-    print(f"[ERROR] API 取得景點資料失敗: {e}")
+  search_result = Attraction().search_attractions(page, keyword)
+  if search_result:
+    for spot in search_result['data']:
+      images = json.loads(spot["images"]) # 把字串轉回 Python 的資料
+      spot['images'] = images[0] 
     return JSONResponse(
-      status_code=500,
       headers={"content-type": "application/json;charset=utf-8"},
-      content={
-        "error": True,
-        "message": "伺服器內部錯誤"
-      }
+      content=search_result
     )
-  finally:
-    if cnx:
-      cnx.close()
-    
 
 @app.get("/api/attraction/{id}")
 async def get_attraction(id: int):
-  query = """
-    SELECT id, name, category, description, address, transport, mrt, lat, lng, images
-    FROM attraction WHERE id=%s
-  """
-  try:
-    cnx = sql_pool.get_connection()
-    with cnx.cursor(dictionary=True) as cursor:
-      cursor.execute(query, (id,))
-      data = cursor.fetchone()
-    
-    if data:
-      data['images'] = json.loads(data['images'])
-      return JSONResponse(
-        headers={"content-type": "application/json;charset=utf-8"},
-        content={"data": data}
-      )
-    else:
-      return JSONResponse(
-        status_code=400,
-        headers={"content-type": "application/json;charset=utf-8"},
-        content={
-          "error": True,
-          "message": "景點編號錯誤"
-        }
-      )
-  except Exception as e:
+  attraction_instance = Attraction(id) 
+  attraction = attraction_instance.to_dict() # 確保是 dict，不是 class 物件
+  if attraction:
+    attraction['images'] = json.loads(attraction['images'])
     return JSONResponse(
-      status_code=500,
+      headers={"content-type": "application/json;charset=utf-8"},
+      content={"data": attraction}
+    )
+  else:
+    return JSONResponse(
+      status_code=400,
       headers={"content-type": "application/json;charset=utf-8"},
       content={
         "error": True,
-        "message": "伺服器內部錯誤"
+        "message": "景點編號錯誤"
       }
     )
-  finally:
-    if cnx:
-      cnx.close()
-
 
 @app.get("/api/mrts")
 async def station():
