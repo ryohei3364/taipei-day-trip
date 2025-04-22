@@ -1,12 +1,11 @@
 from .dbconf import sql_pool
 
 class Model:
-  def __init__(self, query=None, params=(), fetch_one=False):
-    self.data = None
-    if query:
-      self.data = self.find(query, params, fetch_one)
-      
-  def find(self, query, params, fetch_one):
+  def __init__(self):
+    self.data = []
+  
+  @classmethod   
+  def find(cls, query, params=(), fetch_one=True):
     cnx = None
     try:
       cnx = sql_pool.get_connection()
@@ -14,49 +13,149 @@ class Model:
         cursor.execute(query, params)
         return cursor.fetchone() if fetch_one else cursor.fetchall()
     except Exception as e:
-      raise RuntimeError("Database query failed") from e
+      print(f"[DB ERROR] 查詢失敗: {e}")
+      return None  
     finally:
-      if cnx:
+      if cnx and cnx.is_connected():
         cnx.close()
-  
+
+  @classmethod   
+  def insert(cls, params, values):
+    table_name = cls.__name__ 
+    columns = ", ".join(f"`{param}`" for param in params)
+    placeholders = ", ".join(["%s"] * len(params))
+    query = f"INSERT INTO `{table_name}`({columns}) VALUES({placeholders})"
+    cnx = None
+    try:
+      cnx = sql_pool.get_connection()
+      with cnx.cursor() as cursor:
+        cursor.execute(query, values)
+      cnx.commit()
+    except Exception as e:
+      print(f"[DB ERROR] 查詢失敗: {e}")
+      return None 
+    finally:
+      if cnx and cnx.is_connected():
+        cnx.close() 
+
+  @classmethod
+  def delete_by_column(cls, column: str, value):
+    table_name = cls.__name__
+    query = f"DELETE FROM `{table_name}` WHERE `{column}`=%s"
+    cnx = None
+    try:
+      cnx = sql_pool.get_connection()
+      with cnx.cursor() as cursor:
+        cursor.execute(query, (value,))
+        cnx.commit()
+        return cursor.rowcount
+    except Exception as e:
+      print(f"[Model ERROR] 刪除資料失敗: {e}")
+      return 0
+    finally:
+      if cnx and cnx.is_connected():
+        cnx.close()
+                 
+  @classmethod
+  def search_all(cls):
+    table_name = cls.__name__
+    query = f"SELECT * FROM `{table_name}`"
+    return cls.find(query, (), fetch_one=False)
+
+  @classmethod
+  def search_by_column(cls, column: str, value):
+    table_name = cls.__name__
+    query = f"SELECT * FROM `{table_name}` WHERE `{column}`=%s"
+    return cls.find(query=query, params=(value,)) 
+
+  @classmethod
+  def search_by_columns(cls, filters: dict):
+    table_name = cls.__name__
+    where_clauses = []
+    params = []
+
+    for column, value in filters.items():
+      where_clauses.append(f"`{column}` = %s")
+      params.append(value)
+
+    where_statement = " AND ".join(where_clauses)
+    query = f"SELECT * FROM `{table_name}` WHERE {where_statement}"
+
+    return cls.find(query=query, params=tuple(params))
+
+  @classmethod
+  def update_by_column(cls, target_column: str, target_value, update_fields: dict):
+    table_name = cls.__name__
+    set_clause = ", ".join(f"`{key}` = %s" for key in update_fields.keys())
+    query = f"UPDATE `{table_name}` SET {set_clause} WHERE `{target_column}` = %s"
+    params = tuple(update_fields.values()) + (target_value,)
+
+    cnx = None
+    try:
+      cnx = sql_pool.get_connection()
+      with cnx.cursor() as cursor:
+        cursor.execute(query, params)
+        cnx.commit()
+        return cursor.rowcount
+    except Exception as e:
+        print(f"[DB ERROR] 更新失敗: {e}")
+        return 0
+    finally:
+      if cnx and cnx.is_connected():
+        cnx.close()  
+   
   def to_dict(self):
     return self.data
 
-  def __repr__(self):
+  def __str__(self):
     return str(self.data)
   
 class Attraction(Model):
-  base_query = """
-    SELECT id, name, category, description, address, transport, mrt, lat, lng, images
-    FROM attraction
-  """
-  select_query = " WHERE id = %s"
-  
-  def __init__(self, attraction_id=None):
-    if attraction_id:
-      full_query = self.base_query + self.select_query
-      super().__init__(query=full_query, params=(attraction_id,), fetch_one=True)
-    else:
-      self.data = None
-  
-  def search_attractions(self, page: int=0, keyword: str=None, page_size: int = 12):
+  @classmethod
+  def search_by_keyword(cls, page=0, keyword=None, page_size=12):
+    table_name = cls.__name__
     offset = page * page_size
-    base_query = self.base_query
-    select_query = " WHERE name LIKE %s OR mrt = %s"
-    page_query = " LIMIT %s OFFSET %s"
-    
     if keyword:
-      full_query = base_query + select_query + page_query
-      keyword_param = f"%{keyword}%"
-      params = (keyword_param, keyword, page_size, offset)
+        query = f"SELECT * FROM `{table_name}` WHERE name LIKE %s OR mrt = %s LIMIT %s OFFSET %s"
+        params = (f"%{keyword}%", keyword, page_size, offset)
     else:
-      full_query = base_query + page_query
-      params = (page_size, offset)
-    
-    result = self.find(full_query, params, fetch_one=False)
-    
+        query = f"SELECT * FROM `{table_name}` LIMIT %s OFFSET %s"
+        params = (page_size, offset)
+        
+    result = cls.find(query, params, fetch_one=False)
     next_page = page + 1 if len(result) == page_size else None
     return {
       "nextPage": next_page,
       "data": result
     }
+
+class Mrt(Model):
+  @classmethod
+  def search_all(cls):
+    query = "SELECT mrt, COUNT(mrt) AS count FROM attraction GROUP BY mrt ORDER BY count DESC"
+    return cls.find(query, (), fetch_one=False)
+  
+class Member(Model):
+  pass 
+
+class Booking(Model):
+  @classmethod
+  def get_booking_by_userId(cls, userId: int):
+    query = """
+      SELECT * FROM attraction 
+      INNER JOIN booking ON attraction.id=booking.attractionId 
+      WHERE booking.userId=%s;
+    """
+    result = cls.find(query=query, params=(userId,), fetch_one=True)
+    return result
+  
+class Orders(Model):
+  @classmethod
+  def get_data_by_orderNumber(cls, orderNumber: int):
+    query = """
+      SELECT * FROM attraction 
+      INNER JOIN orders ON attraction.id=orders.attractionId 
+      WHERE orders.orderNumber=%s;
+    """
+    result = cls.find(query=query, params=(orderNumber,), fetch_one=True)
+    return result
