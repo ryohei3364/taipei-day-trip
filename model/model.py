@@ -21,7 +21,7 @@ class Model:
 
   @classmethod   
   def insert(cls, params, values):
-    table_name = cls.__name__ 
+    table_name = cls.__name__.lower() 
     columns = ", ".join(f"`{param}`" for param in params)
     placeholders = ", ".join(["%s"] * len(params))
     query = f"INSERT INTO `{table_name}`({columns}) VALUES({placeholders})"
@@ -40,7 +40,7 @@ class Model:
 
   @classmethod
   def delete_by_column(cls, column: str, value):
-    table_name = cls.__name__
+    table_name = cls.__name__.lower() 
     query = f"DELETE FROM `{table_name}` WHERE `{column}`=%s"
     cnx = None
     try:
@@ -58,19 +58,19 @@ class Model:
                  
   @classmethod
   def search_all(cls):
-    table_name = cls.__name__
+    table_name = cls.__name__.lower() 
     query = f"SELECT * FROM `{table_name}`"
     return cls.find(query, (), fetch_one=False)
 
   @classmethod
   def search_by_column(cls, column: str, value):
-    table_name = cls.__name__
+    table_name = cls.__name__.lower() 
     query = f"SELECT * FROM `{table_name}` WHERE `{column}`=%s"
     return cls.find(query=query, params=(value,)) 
 
   @classmethod
   def search_by_columns(cls, filters: dict):
-    table_name = cls.__name__
+    table_name = cls.__name__.lower() 
     where_clauses = []
     params = []
 
@@ -85,7 +85,7 @@ class Model:
 
   @classmethod
   def update_by_column(cls, target_column: str, target_value, update_fields: dict):
-    table_name = cls.__name__
+    table_name = cls.__name__.lower() 
     set_clause = ", ".join(f"`{key}` = %s" for key in update_fields.keys())
     query = f"UPDATE `{table_name}` SET {set_clause} WHERE `{target_column}` = %s"
     params = tuple(update_fields.values()) + (target_value,)
@@ -113,7 +113,7 @@ class Model:
 class Attraction(Model):
   @classmethod
   def search_by_keyword(cls, page=0, keyword=None, page_size=12):
-    table_name = cls.__name__
+    table_name = cls.__name__.lower() 
     offset = page * page_size
     if keyword:
         query = f"SELECT * FROM `{table_name}` WHERE name LIKE %s OR mrt = %s LIMIT %s OFFSET %s"

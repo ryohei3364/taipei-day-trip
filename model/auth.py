@@ -15,12 +15,13 @@ class Auth:
     try:
       token = authorization.split("Bearer ")[1]
       decoded_token = jwt.decode(token, PRIVATE_KEY, ALGORITHM)
-      return success_response(decoded_token)
+      return {"data": decoded_token}
     except jwt.ExpiredSignatureError:
       return error_response("使用者登入憑證已過期")
 
   def get_user_id(user):
     if isinstance(user, JSONResponse):
+      print(user)
       return user
     return user["data"]["id"]
     
