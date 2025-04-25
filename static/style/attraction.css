@@ -1,3 +1,9 @@
+.date-row {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+}
 .attraction {
   width: 1200px;
   display: flex;
@@ -81,7 +87,11 @@
   margin-bottom: 15px;
 }
 .profile input {
-  margin-top: 15px;
+  width: 150px;
+}
+.date-row label {
+  margin-left: 10px;
+  color: var(--cyan70-color);
 }
 .profile__booking {
   width: 100%;

@@ -159,3 +159,10 @@ class Orders(Model):
     """
     result = cls.find(query=query, params=(orderNumber,), fetch_one=True)
     return result
+  
+  @classmethod
+  def search_by_column(cls, column: str, value):
+    table_name = cls.__name__.lower() 
+    query = f"SELECT * FROM `{table_name}` WHERE `{column}`=%s ORDER BY orderTime DESC"
+    return cls.find(query=query, params=(value,), fetch_one=False) 
+  

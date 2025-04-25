@@ -21,7 +21,6 @@ class Auth:
 
   def get_user_id(user):
     if isinstance(user, JSONResponse):
-      print(user)
       return user
     return user["data"]["id"]
     

@@ -1,18 +1,18 @@
 {% extends "attraction.html" %}
 
   {% block title %}
-    Booking
+    預訂行程頁面
   {% endblock %}
   
   {% block link %}
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='./style/core.css') }}"/>  
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='./style/member.css') }}"/>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='./style/user.css') }}"/>
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='./style/booking.css') }}"/>
   {% endblock %}
   
   {% block script %}
   <script defer src="https://js.tappaysdk.com/sdk/tpdirect/v5.14.0"></script>
-  <script defer src="{{ url_for('static', path='./script/member.js') }}"></script>
+  <script defer src="{{ url_for('static', path='./script/user.js') }}"></script>
   <script defer src="{{ url_for('static', path='./script/booking.js') }}"></script>
   <script defer src="{{ url_for('static', path='./script/order.js') }}"></script>
   {% endblock %}

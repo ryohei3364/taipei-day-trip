@@ -16,3 +16,6 @@ async def booking(request: Request):
 @page_router.get("/thankyou", include_in_schema=False)
 async def thankyou(request: Request, number: str):
   return templates.TemplateResponse(request=request, name="thankyou.html", context={"message": number})
+@page_router.get("/member", include_in_schema=False)
+async def member(request: Request):
+	return templates.TemplateResponse(request=request, name="member.html")

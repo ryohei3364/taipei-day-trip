@@ -50,14 +50,13 @@ main {
 .menu__item--logo {
   font-size: 30px;
   font-weight: 600;
-  color: var(--cyan70-color);
+  color: var(--cyan70-color);  
 }
 .menu__item--logo:hover {
   color: var(--darkcyan-color);
 }
 .menu__item--container {
-  display: flex;  
-  justify-content: space-between;
+  display: flex;
   color: var(--grey70-color);
 }
 .menu__item--container a {

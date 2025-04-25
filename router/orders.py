@@ -30,7 +30,44 @@ def pay_by_prime(prime, order_number, amount, contact_name, contact_email, conta
     }
   response = requests.post(TAPPAY_URL, headers=headers, json=payload)
   return response.json()
-        
+
+@orders_router.get("/api/orders")
+async def all_orders(request: Request, user=Depends(Auth.get_current_user)):
+  try:
+    userId = Auth.get_user_id(user)
+    orders_data = Orders.search_by_column("userId", userId)
+    
+    if orders_data:
+      order_list = []
+      paid_count = 0
+      unpaid_count = 0
+      for order in orders_data:
+        if order['status'] == 0:
+          paid_count += 1
+        else:
+          unpaid_count += 1
+        order_list.append({
+          "id": order['id'],
+          "orderNumber": order['orderNumber'],
+          "date": order['date'].isoformat(),
+          "time": order['time'],
+          "contactName": order['contactName'],
+          "contactEmail": order['contactEmail'],
+          "contactPhone": order['contactPhone'],
+          "orderTime": order['orderTime'].isoformat(),
+          "status": order['status'],
+        })
+        data = {
+          "order_paid": paid_count,
+          "order_unpaid": unpaid_count,
+          "data": order_list
+        }
+      return success_response(data, key=None)
+    else:
+      return success_response(None)
+  except Exception as e:
+    return DB_error_response("伺服器內部錯誤")
+            
 @orders_router.get("/api/order/{orderNumber}")
 async def current_order(orderNumber: str, request: Request, user=Depends(Auth.get_current_user)):
   try:
@@ -115,8 +152,8 @@ async def current_order(request: Request, user=Depends(Auth.get_current_user)):
         return error_response("已有未付款訂單，且付款驗證失敗，TapPay status: " + str(tappay_result.get("status")))
     
     Orders.insert(
-      params=("orderNumber","bookingId","attractionId","date","time","price","contactName","contactEmail","contactPhone","status"), 
-      values=(number,bookingId,attractionId,date,time,price,contactName,contactEmail,contactPhone,1)
+      params=("orderNumber","bookingId","attractionId","userId","date","time","price","contactName","contactEmail","contactPhone","status"), 
+      values=(number,bookingId,attractionId,userId,date,time,price,contactName,contactEmail,contactPhone,1)
     )
     tappay_result = pay_by_prime(prime, number, price, contactName, contactEmail, contactPhone)
   

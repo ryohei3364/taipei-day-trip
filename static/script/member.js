@@ -1,150 +1,106 @@
-const signinButton = document.querySelector('.menu__item--container--user');
+const ordersContainer = document.getElementById('orders-container');
 const signoutButton = document.querySelector('.menu__item--container--signout');
-const signInDialog = document.getElementById('signInDialog');
-const signUpDialog = document.getElementById('signUpDialog');
-const closeButtons = document.querySelectorAll('.close');
-const dateInput = document.getElementById('date');
-const navBookingBtn = document.querySelector('.menu__item--container--booking');
-const token = localStorage.getItem("token");
-
-signinButton.style.display = "none";
-
-if (dateInput) {
-  const today = new Date().toISOString().split('T')[0];
-  dateInput.value = today;
-}
-
-function updateUI(token) {
-  signinButton.style.display = token ? "none" : "block";
-  signoutButton.style.display = token ? "block" : "none";
-}
-
-async function checkUserInfo() {
-  if (token) {
-    const response = await fetch("/api/user/auth", { 
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-      }
-    });
-    const user = await response.json();
-    if (user) {
-      updateUI(true);
-      return true;
-    } else {
-      localStorage.removeItem("token");
-      updateUI(false);
-      return false;
-    }
-  } else {
-    updateUI(false);
-    return false;
-  }
-}
-
-async function handleBookingRedirect() {
-  if (await checkUserInfo()) {
-    window.location.href = "/booking";
-  } else {
-    signInDialog.showModal();
-  }
-}
-
-async function formBooking(event) {
-  event.preventDefault();
-  if (!await checkUserInfo()) {
-    signInDialog.showModal();
-    return;
-  }
-  const attractionId = window.location.pathname.split("/").pop();
-  const date = document.getElementById("date").value;
-  const time = document.querySelector('input[name="time"]:checked').value;
-  const price = document.getElementById("price").value;
-
-  if (!date || !time || !price) return;
-
-  const response = await fetch('/api/booking', {
-    method: "POST",
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify({ attractionId, date, time, price })
-  });
-  const result = await response.json();
-  window.location.href = "/booking"; 
-}
-
-navBookingBtn.addEventListener('click', handleBookingRedirect);
-
-async function login(event) {
-  event.preventDefault();
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  const response = await fetch('/api/user/auth', {
-    method: "PUT",
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ email, password })
-  });
-
-  const result = await response.json();
-  if (response.ok) {
-    localStorage.setItem("token", result.token);
-    document.getElementById("message").textContent = result.message;
-    updateUI(true);
-    location.reload(); 
-  } else {
-    document.getElementById("message").textContent = result.message;
-  }
-}
-
-async function signUp(event) {
-  event.preventDefault();
-  const name = document.getElementById("signUp_name").value;
-  const email = document.getElementById("signUp_email").value;
-  const password = document.getElementById("signUp_password").value;
-
-  const response = await fetch('/api/user', {
-    method: "POST",
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ name, email, password })
-  });
-
-  const result = await response.json();
-  if (response.ok) {
-    document.getElementById("signUp_message").textContent = result.message;
-  } else {
-    document.getElementById("signUp_message").textContent = result.message;
-  }
-}
+const usernameText = document.getElementById('member--username');
+const paidText = document.getElementById('paid-count');
+const unpaidText = document.getElementById('unpaid-count');
 
 signoutButton.addEventListener("click", () => {
   localStorage.removeItem("token");
-  window.location.reload();
+  window.location.href = "/";
   updateUI(false);
 });
 
-signinButton.addEventListener("click", () => {
-  signUpDialog.close();
-  signInDialog.showModal();
-});
+async function renderOrders() {
+  const token = localStorage.getItem("token");
+  if (token) {
+    const [userResponse, orderResponse] = await Promise.all([
+      fetch("/api/user/auth", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      }),
+      fetch("/api/orders", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      })
+    ]);
+    const userRes = await userResponse.json();
+    const ordersRes = await orderResponse.json();
 
-function switchToSignUp() {
-  signInDialog.close();
-  signUpDialog.showModal();
-}
+    if (userRes?.data) {
+      usernameText.textContent = userRes.data.name;
+    } 
+    if (ordersRes?.data) {
+      paidText.textContent = ordersRes.order_paid;
+      unpaidText.textContent = ordersRes.order_unpaid;
+      paidText.style.color = 'green';
+      unpaidText.style.color = 'red';
+      
+      ordersRes.data.forEach(order => {
+        const statusClass = order.status === 0 ? 'paid' : 'unpaid';
+        const statusText = order.status === 0 ? '已付款' : '未付款';
 
-function switchToSignIn() {
-  signUpDialog.close();
-  signInDialog.showModal();
-}
+        const card = document.createElement("div");
+        card.classList.add("order-card");
 
-closeButtons.forEach((btn) => {
-  btn.addEventListener("click", (event) => {
-    event.target.closest("dialog").close();
-  });
-});
+        const header = document.createElement("div");
+        header.classList.add("order-header");
 
-checkUserInfo();
+        const left = document.createElement("div");
+
+        const numberSpan = document.createElement("span");
+        numberSpan.classList.add("order-number");
+        numberSpan.textContent = `訂單編號：${order.orderNumber}`;
+
+        const dateSpan = document.createElement("span");
+        dateSpan.classList.add("order-date");
+        dateSpan.textContent = order.date;
+
+        left.appendChild(numberSpan);
+        left.appendChild(dateSpan);
+
+        const statusSpan = document.createElement("span");
+        statusSpan.classList.add("order-status", statusClass);
+        statusSpan.textContent = statusText;
+
+        header.appendChild(left);
+        header.appendChild(statusSpan);
+
+        const body = document.createElement("div");
+        body.classList.add("order-body");
+
+        const info = document.createElement("div");
+        info.classList.add("order-info");
+
+        const timeP = document.createElement("p");
+        timeP.textContent = `時間：${order.time}`;
+
+        const contactNameP = document.createElement("p");
+        contactNameP.textContent = `聯絡人：${order.contactName}`;
+
+        const emailP = document.createElement("p");
+        emailP.textContent = `Email：${order.contactEmail}`;
+
+        const phoneP = document.createElement("p");
+        phoneP.textContent = `電話：${order.contactPhone}`;
+
+        const createdP = document.createElement("p");
+        createdP.textContent = `建立時間：${new Date(order.orderTime).toLocaleString()}`;
+
+        info.append(timeP, contactNameP, emailP, phoneP, createdP);
+        body.appendChild(info);
+
+        card.appendChild(header);
+        card.appendChild(body);
+
+        ordersContainer.appendChild(card);
+      });
+    }
+  }
+}  
+renderOrders();

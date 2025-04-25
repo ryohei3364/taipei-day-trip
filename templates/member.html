@@ -1,0 +1,34 @@
+{% extends "index.html" %}
+
+{% block title %}
+  會員中心
+{% endblock %}
+
+{% block link %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', path='./style/user.css') }}"/> 
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', path='./style/core.css') }}"/>  
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', path='./style/member.css') }}"/>  
+{% endblock %}
+
+{% block script %}
+<script defer src="{{ url_for('static', path='./script/user.js') }}"></script>
+<script defer src="{{ url_for('static', path='./script/member.js') }}"></script>
+{% endblock %}
+
+{% block section %}
+<a class="menu__item--container--signout" id="signLink"><span>登出系統</span></a>
+<section class="member--section">
+  <div class="member--wrapper">
+    <h3 class="member--greeting">您好，<span id="member--username"></span>，以下是您的訂單總覽：</h3>
+    <div class="order-counts">
+      <span>已付款訂單：<span id="paid-count"></span></span>
+      <span>未付款訂單：<span id="unpaid-count"></span></span>
+    </div>
+  </div>
+  <div id="orders-container"></div>
+</section>
+{% endblock %}
+
+{% block main %}
+
+{% endblock %}
