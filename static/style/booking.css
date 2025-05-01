@@ -1,3 +1,7 @@
+.booking--wrappe label {
+  color: var(--cyan70-color);
+}
+
 section {
   width: 100%;
   margin-top: 40px;
