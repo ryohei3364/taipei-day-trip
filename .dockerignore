@@ -1,0 +1,30 @@
+# Python 編譯產物
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.python-version
+
+# 虛擬環境（如果有建立）
+venv/
+env/
+
+# 本機設定與隱私檔案
+.env
+*.env
+
+# OS 系統檔案
+.DS_Store
+Thumbs.db
+
+# Git 檔案
+.git
+.gitignore
+
+# IDE 設定檔
+.vscode/
+.idea/
+
+# sql 檔案
+.sql
+*.sql

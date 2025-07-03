@@ -94,7 +94,7 @@ async function formBooking(event) {
 }
 
 async function login(event) {
-  event.preventDefault();
+  if (event) event.preventDefault(); // 👉 只有在有事件時才 preventDefault
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
@@ -153,3 +153,4 @@ closeButtons.forEach((btn) => {
 });
 
 checkUserInfo();
+

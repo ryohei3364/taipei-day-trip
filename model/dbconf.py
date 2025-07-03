@@ -5,10 +5,10 @@ import os
 load_dotenv()
 
 DB_CONFIG = {
-  "user": os.getenv("MYSQL_USER"),
-  "password": os.getenv("MYSQL_PW"),
-  "host": "localhost",
-  "database": os.getenv("MYSQL_DB"),
+  "user": os.getenv("AWS_RDS_USER"),
+  "password": os.getenv("AWS_RDS_PW"),
+  "host": os.getenv("AWS_RDS_HOST"),
+  "database": os.getenv("AWS_RDS_DB_taipei"),
   "charset": "utf8"
 }
 
@@ -63,10 +63,10 @@ class SQLPool:
       print(f"執行中查詢數：{running}")
       print(f"長時間執行中的查詢（> 5 秒）:{long_running}")
       
-      for process in processlist:
-        if process["Command"] == "Sleep" and process["Time"] > 10:
-          cursor.execute(f"KILL {process['Id']}")
-          print(f"Killed connection {process['Id']} - Sleep for {process['Time']} seconds.")
+      # for process in processlist:
+      #   if process["Command"] == "Sleep" and process["Time"] > 10:
+      #     cursor.execute(f"KILL {process['Id']}")
+      #     print(f"Killed connection {process['Id']} - Sleep for {process['Time']} seconds.")
       
     finally:
         cursor.close()

@@ -176,5 +176,10 @@ rightScroll.addEventListener('click', () => {
   listcontainerDiv.scrollBy({ left: 30, behavior: 'smooth' });
 });
 
-loadAttractions();
-getMrts();
+(async () => {
+  await getMrts();      // 確保 MRT 列表先渲染
+  loadAttractions();    // 再載入景點
+})();
+
+// getMrts();
+// loadAttractions();
