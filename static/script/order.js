@@ -61,57 +61,77 @@ orderButton.addEventListener('click', function () {
     const contactName = document.getElementById("booking--input--username").value;
     const contactEmail = document.getElementById("booking--input--email").value;
     const contactPhone = document.getElementById("booking--input--mobile").value;
+
     if (!contactName || !contactEmail || !contactPhone) {
       warningPhone.style.boxShadow = "0 0 5px 2px #337788";
       return; 
     } else {
       warningPhone.style.boxShadow = "none";
     }
+
     const prime = result.card.prime;
 
-    const booking = await fetch("/api/booking", { 
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-      }
-    });
-    const bookingRes = await booking.json();
-
-    const orderBody = {
-      prime: prime,
-      order: {
-        price: bookingRes.data.price,
-        trip: {
-          attraction: {
-            id: bookingRes.data.attraction.id,
-            name: bookingRes.data.attraction.name,
-            address: bookingRes.data.attraction.address,
-            image: bookingRes.data.attraction.image
-          },
-          date: bookingRes.data.date,
-          time: bookingRes.data.time
-        },
-        contact: {
-          name: contactName,
-          email: contactEmail,
-          phone: contactPhone
+    try{
+      const booking = await fetch("/api/booking", { 
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
         }
+      });
+      const bookingRes = await booking.json();
+
+      const orderBody = {
+        prime: prime,
+        order: {
+          price: bookingRes.data.price,
+          trip: {
+            attraction: {
+              id: bookingRes.data.attraction.id,
+              name: bookingRes.data.attraction.name,
+              address: bookingRes.data.attraction.address,
+              image: bookingRes.data.attraction.image
+            },
+            date: bookingRes.data.date,
+            time: bookingRes.data.time
+          },
+          contact: {
+            name: contactName,
+            email: contactEmail,
+            phone: contactPhone
+          }
+        }
+      };
+
+      const order = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(orderBody)
+      });
+      if (!order.ok) {
+        const errorText = await order.text();
+        console.error("❌ 訂單建立失敗：", order.status, errorText);
+        alert("訂單建立失敗，請稍後再試！");
+        return;
       }
-    };
-    const order = await fetch("/api/orders", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(orderBody)
-    });
-    const orderRes = await order.json();
-    window.location.href = `/thankyou?number=${orderRes.data.number}`;
+      const orderRes = await order.json();
+      if (!orderRes.data || !orderRes.data.number) {
+        console.error("❗ 訂單回傳格式錯誤：", orderRes);
+        alert("建立訂單時發生錯誤，請稍後再試！");
+        return;
+      }
+      
+      console.log("✅ 訂單成功：", orderRes);
+      window.location.href = `/thankyou?number=${orderRes.data.number}`;
+    } catch (err) {
+      console.error("🔥 訂單流程錯誤:", err);
+      alert("訂單處理時發生錯誤，請稍後再試！");
+    }
   });
 });
-
 
 // function validateCardFields() {
 //   const status = TPDirect.card.getTappayFieldsStatus();
