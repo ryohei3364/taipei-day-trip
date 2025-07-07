@@ -5,8 +5,8 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # 複製 requirements.txt 並安裝相依套件
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt ./
+RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
 # 複製應用程式檔案
 COPY . .

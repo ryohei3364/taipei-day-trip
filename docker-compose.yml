@@ -1,0 +1,14 @@
+services:
+  taipei-app:
+    image: ryohei3364/taipei-app:${TAG}
+    ports:
+      - "${HOST_PORT}:3000"
+    env_file:
+      - ./.env
+    restart: on-failure
+    networks:
+      - shared-net
+
+networks:
+  shared-net:
+    external: true
