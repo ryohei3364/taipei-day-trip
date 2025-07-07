@@ -1,0 +1,103 @@
+name: Deploy Taipei App
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Set variables
+        run: |
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            echo "TAG=latest" >> $GITHUB_ENV
+            echo "DEPLOY_DIR=taipei" >> $GITHUB_ENV
+            echo "HOST_PORT=3000" >> $GITHUB_ENV
+          else
+            echo "TAG=develop" >> $GITHUB_ENV
+            echo "DEPLOY_DIR=taipei-test" >> $GITHUB_ENV
+            echo "HOST_PORT=3001" >> $GITHUB_ENV
+          fi
+          
+      - name: Build Docker image
+        run: |
+          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+            TAG="latest"
+          else
+            TAG="develop"
+          fi
+          docker build -t ryohei3364/taipei-app:$TAG .
+
+      - name: Push Docker image
+        run: |
+          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+            TAG="latest"
+          else
+            TAG="develop"
+          fi
+          docker push ryohei3364/taipei-app:$TAG
+
+      - name: Decode SSH key
+        env:
+          EC2_KEY_BASE64: ${{ secrets.EC2_KEY_BASE64 }}
+        run: |
+          echo "$EC2_KEY_BASE64" | base64 -d > secure.pem
+          chmod 600 secure.pem
+
+      - name: Set deploy environment variables # 遠端有分正式 (~/taipei) 跟測試 (~/taipei-test) 兩個目錄
+        run: |
+          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+            echo "DEPLOY_DIR=taipei" >> $GITHUB_ENV
+            echo "TAG=latest" >> $GITHUB_ENV
+            echo "HOST_PORT=3000" >> $GITHUB_ENV
+          else
+            echo "DEPLOY_DIR=taipei-test" >> $GITHUB_ENV
+            echo "TAG=develop" >> $GITHUB_ENV
+            echo "HOST_PORT=3001" >> $GITHUB_ENV        
+          fi
+
+      - name: Generate .env file from secret
+        run: echo "${{ secrets.ENV_CONTENT }}" > .env
+
+      - name: Rsync files to EC2
+        env:
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          DEPLOY_DIR: ${{ env.DEPLOY_DIR }}
+        run: |
+          rsync -avz -e "ssh -i secure.pem -o StrictHostKeyChecking=no" docker-compose.yml $EC2_USER@$EC2_HOST:~/${DEPLOY_DIR}/
+          rsync -avz -e "ssh -i secure.pem -o StrictHostKeyChecking=no" .env $EC2_USER@$EC2_HOST:~/${DEPLOY_DIR}/
+
+      - name: Sync config and deploy
+        env:
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          DEPLOY_DIR: ${{ env.DEPLOY_DIR }}
+          TAG: ${{ env.TAG }}
+          HOST_PORT: ${{ env.HOST_PORT }}
+        run: |
+          ssh -o StrictHostKeyChecking=no -i secure.pem $EC2_USER@$EC2_HOST << EOF
+
+            cd ~/${DEPLOY_DIR}
+
+            echo "🧼 清除舊容器..."
+            TAG="${TAG}" HOST_PORT="${HOST_PORT}" docker compose down
+
+            echo "📦 拉取新 image..."
+            TAG="${TAG}" HOST_PORT="${HOST_PORT}" docker compose pull
+
+            echo "🚀 啟動服務..."
+            TAG="${TAG}" HOST_PORT="${HOST_PORT}" docker compose up -d
+
+            echo "✅ 部署完成"
+          EOF
